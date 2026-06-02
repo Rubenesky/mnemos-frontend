@@ -69,7 +69,11 @@ async function handleLogin() {
 
   try {
     await auth.login(email.value, password.value)
-    router.push({ name: 'dashboard' })
+    if (!localStorage.getItem('hasSeenOnboarding')) {
+      router.push({ name: 'onboarding' })
+    } else {
+      router.push({ name: 'dashboard' })
+    }
   } catch (e) {
     error.value = 'Invalid credentials. Please try again.'
   } finally {

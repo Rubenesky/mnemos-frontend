@@ -65,6 +65,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/gallery',
+      name: 'public-gallery',
+      component: () => import('@/views/PublicGalleryView.vue'),
+      // NO meta.requiresAuth — public route
+    },
+    {
+      path: '/welcome',
+      name: 'onboarding',
+      component: () => import('@/views/OnboardingView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),

@@ -34,6 +34,13 @@
             >
               AI Chat
             </RouterLink>
+            <RouterLink
+              to="/gallery"
+              class="nav-link"
+              :class="{ 'nav-link--active': $route.path.startsWith('/gallery') }"
+            >
+              Public Gallery
+            </RouterLink>
           </div>
         </div>
 
@@ -97,6 +104,13 @@
           @click="menuOpen = false"
         >
           AI Chat
+        </RouterLink>
+        <RouterLink
+          to="/gallery"
+          class="mobile-nav-link"
+          @click="menuOpen = false"
+        >
+          Public Gallery
         </RouterLink>
         <div class="mobile-menu-user">
           <p class="user-name">{{ auth.user?.name }}</p>
