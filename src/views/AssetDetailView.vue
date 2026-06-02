@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
-    <div v-if="loading" class="text-center py-20 text-gray-400">Cargando...</div>
+    <div v-if="loading" class="text-center py-20 text-gray-400">Loading...</div>
 
-    <div v-else-if="!asset" class="text-center py-20 text-gray-400">Asset no encontrado.</div>
+    <div v-else-if="!asset" class="text-center py-20 text-gray-400">Asset not found.</div>
 
     <div v-else class="space-y-6">
       <!-- Header -->
@@ -15,22 +15,22 @@
             :to="`/assets/${asset.id}/edit`"
             class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
           >
-            Editar
+            Edit
           </RouterLink>
           <button
             v-if="auth.isAdmin"
             @click="handleDelete"
             class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
           >
-            Eliminar
+            Delete
           </button>
           <RouterLink to="/assets" class="text-gray-500 dark:text-gray-400 hover:underline text-sm">
-            ← Volver
+            ← Back
           </RouterLink>
         </div>
       </div>
 
-      <!-- Previsualización -->
+      <!-- Preview -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <img
           v-if="asset.mime_type.startsWith('image/')"
@@ -46,76 +46,76 @@
         </div>
       </div>
 
-      <!-- Información y Metadatos -->
+      <!-- Information and Metadata -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-          <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-4">Información</h2>
+          <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-4">Information</h2>
           <dl class="space-y-3 text-sm">
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Nombre original</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Original name</dt>
               <dd class="text-gray-800 dark:text-gray-200 font-medium">
                 {{ asset.original_name }}
               </dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Tipo</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Type</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ asset.mime_type }}</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Tamaño</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Size</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ asset.size_kb }} KB</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Subido por</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Uploaded by</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ asset.uploaded_by }}</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Estado</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
               <dd>
                 <span
                   v-if="asset.status === 'processed'"
                   class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
                 >
-                  Procesado
+                  Processed
                 </span>
                 <span v-else class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                  Pendiente
+                  Pending
                 </span>
               </dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Fecha</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Date</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ formatDate(asset.created_at) }}</dd>
             </div>
           </dl>
         </div>
 
-        <!-- Metadatos IA -->
+        <!-- AI Metadata -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6" v-if="asset.metadata">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-200">Metadatos</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-200">Metadata</h2>
             <span
               v-if="asset.metadata.ai_generated"
               class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full"
             >
-              ✨ Generado por IA
+              ✨ AI generated
             </span>
           </div>
           <dl class="space-y-3 text-sm">
             <div>
-              <dt class="text-gray-500 dark:text-gray-400 mb-1">Título</dt>
+              <dt class="text-gray-500 dark:text-gray-400 mb-1">Title</dt>
               <dd class="text-gray-800 dark:text-gray-200 font-medium">
                 {{ asset.metadata.title ?? '—' }}
               </dd>
             </div>
             <div>
-              <dt class="text-gray-500 dark:text-gray-400 mb-1">Descripción</dt>
+              <dt class="text-gray-500 dark:text-gray-400 mb-1">Description</dt>
               <dd class="text-gray-800 dark:text-gray-200">
                 {{ asset.metadata.description ?? '—' }}
               </dd>
             </div>
             <div v-if="asset.metadata.tags?.length">
-              <dt class="text-gray-500 dark:text-gray-400 mb-2">Etiquetas</dt>
+              <dt class="text-gray-500 dark:text-gray-400 mb-2">Tags</dt>
               <dd class="flex flex-wrap gap-2">
                 <span
                   v-for="tag in asset.metadata.tags"
@@ -130,14 +130,13 @@
         </div>
       </div>
 
-      <!-- Generador de variantes con IA -->
+      <!-- AI variant generator -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div class="flex justify-between items-center mb-4">
           <div>
-            <h2 class="font-semibold text-gray-800 dark:text-gray-200">🧠 Sugerencias de IA</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-200">🧠 AI Suggestions</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              La IA puede sugerirte títulos alternativos, descripciones mejoradas y tags
-              adicionales.
+              AI can suggest alternative titles, improved descriptions and additional tags.
             </p>
           </div>
           <button
@@ -145,16 +144,16 @@
             :disabled="variantsLoading"
             class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 text-sm font-medium"
           >
-            {{ variantsLoading ? 'Generando...' : '✨ Generar sugerencias' }}
+            {{ variantsLoading ? 'Generating...' : '✨ Generate suggestions' }}
           </button>
         </div>
 
-        <!-- Variantes generadas -->
+        <!-- Generated variants -->
         <div v-if="variants" class="space-y-4">
-          <!-- Títulos alternativos -->
+          <!-- Alternative titles -->
           <div v-if="variants.titles?.length">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Títulos alternativos
+              Alternative titles
             </h3>
             <div class="space-y-2">
               <div
@@ -167,16 +166,16 @@
                   @click="applyVariant('title', title)"
                   class="text-xs text-blue-600 hover:underline ml-2 shrink-0"
                 >
-                  Usar este
+                  Use this
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Descripciones mejoradas -->
+          <!-- Improved descriptions -->
           <div v-if="variants.descriptions?.length">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Descripciones mejoradas
+              Improved descriptions
             </h3>
             <div class="space-y-2">
               <div
@@ -189,16 +188,16 @@
                   @click="applyVariant('description', desc)"
                   class="text-xs text-blue-600 hover:underline ml-2 shrink-0"
                 >
-                  Usar esta
+                  Use this
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Tags adicionales -->
+          <!-- Additional tags -->
           <div v-if="variants.additional_tags?.length">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tags adicionales sugeridos
+              Suggested additional tags
             </h3>
             <div class="flex flex-wrap gap-2">
               <button
@@ -211,7 +210,7 @@
               </button>
             </div>
             <p class="text-xs text-gray-400 mt-2">
-              Haz clic en un tag para añadirlo a los metadatos
+              Click a tag to add it to the metadata
             </p>
           </div>
         </div>
@@ -238,7 +237,7 @@ const variants = ref(null)
 const variantsLoading = ref(false)
 
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('es-ES', {
+  return new Date(dateString).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -248,14 +247,14 @@ function formatDate(dateString) {
 }
 
 async function handleDelete() {
-  if (!confirm('¿Seguro que quieres eliminar este asset?')) return
+  if (!confirm('Are you sure you want to delete this asset?')) return
 
   try {
     await api.delete(`/assets/${route.params.id}`)
-    toast.success('Asset eliminado correctamente.')
+    toast.success('Asset deleted successfully.')
     router.push({ name: 'assets' })
   } catch (e) {
-    toast.error('Error al eliminar el asset.')
+    toast.error('Error deleting asset.')
   }
 }
 
@@ -266,9 +265,9 @@ async function generateVariants() {
   try {
     const response = await api.post(`/assets/${route.params.id}/variants`)
     variants.value = response.data.variants
-    toast.success('Sugerencias generadas correctamente.')
+    toast.success('Suggestions generated successfully.')
   } catch (e) {
-    toast.error('Error al generar sugerencias. Inténtalo de nuevo.')
+    toast.error('Error generating suggestions. Please try again.')
   } finally {
     variantsLoading.value = false
   }
@@ -283,13 +282,13 @@ async function applyVariant(field, value) {
       tags: currentTags,
     })
 
-    // Actualizamos el asset en local
+    // Update asset locally
     if (field === 'title') asset.value.metadata.title = value
     if (field === 'description') asset.value.metadata.description = value
 
-    toast.success('Metadato actualizado correctamente.')
+    toast.success('Metadata updated successfully.')
   } catch (e) {
-    toast.error('Error al aplicar la sugerencia.')
+    toast.error('Error applying suggestion.')
   }
 }
 
@@ -297,7 +296,7 @@ async function applyTag(tag) {
   try {
     const currentTags = asset.value.metadata?.tags ?? []
     if (currentTags.includes(tag)) {
-      toast.info('Ese tag ya existe en los metadatos.')
+      toast.info('That tag already exists in the metadata.')
       return
     }
 
@@ -309,9 +308,9 @@ async function applyTag(tag) {
     })
 
     asset.value.metadata.tags = newTags
-    toast.success(`Tag "${tag}" añadido correctamente.`)
+    toast.success(`Tag "${tag}" added successfully.`)
   } catch (e) {
-    toast.error('Error al añadir el tag.')
+    toast.error('Error adding tag.')
   }
 }
 

@@ -7,18 +7,18 @@
           to="/assets/upload"
           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
         >
-          + Subir asset
+          + Upload asset
         </RouterLink>
       </div>
 
-      <!-- Búsqueda por lenguaje natural -->
+      <!-- Natural language search -->
       <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4">
-        <p class="text-white text-sm font-medium mb-2">🧠 Búsqueda inteligente con IA</p>
+        <p class="text-white text-sm font-medium mb-2">🧠 AI-powered smart search</p>
         <div class="flex gap-2">
           <input
             v-model="nlQuery"
             type="text"
-            placeholder="Ej: muéstrame imágenes de paisajes subidas esta semana..."
+            placeholder="E.g. show me landscape images uploaded this week..."
             class="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-white"
             @keyup.enter="handleNLSearch"
           />
@@ -27,11 +27,11 @@
             :disabled="nlLoading || !nlQuery"
             class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 disabled:opacity-50"
           >
-            {{ nlLoading ? '...' : 'Buscar' }}
+            {{ nlLoading ? '...' : 'Search' }}
           </button>
         </div>
         <div v-if="nlFilters" class="mt-2 text-xs text-blue-100">
-          Filtros detectados:
+          Detected filters:
           <span
             v-for="(value, key) in nlFilters"
             :key="key"
@@ -39,46 +39,46 @@
           >
             {{ key }}: {{ value }}
           </span>
-          <button @click="clearNLSearch" class="ml-2 underline">limpiar</button>
+          <button @click="clearNLSearch" class="ml-2 underline">clear</button>
         </div>
       </div>
 
-      <!-- Filtros manuales -->
+      <!-- Manual filters -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <input
             v-model="search"
             type="text"
-            placeholder="Buscar por nombre..."
+            placeholder="Search by name..."
             class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <select
             v-model="filterType"
             class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Todos los tipos</option>
-            <option value="image">Imágenes</option>
+            <option value="">All types</option>
+            <option value="image">Images</option>
             <option value="application/pdf">PDFs</option>
           </select>
           <select
             v-model="filterStatus"
             class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Todos los estados</option>
-            <option value="processed">Procesado</option>
-            <option value="pending">Pendiente</option>
+            <option value="">All statuses</option>
+            <option value="processed">Processed</option>
+            <option value="pending">Pending</option>
           </select>
         </div>
       </div>
 
-      <!-- Listado -->
-      <div v-if="loading" class="text-center py-20 text-gray-400">Cargando assets...</div>
+      <!-- Asset list -->
+      <div v-if="loading" class="text-center py-20 text-gray-400">Loading assets...</div>
 
       <div
         v-else-if="displayedAssets.length === 0"
         class="text-center py-20 text-gray-400 dark:text-gray-500"
       >
-        No se encontraron assets.
+        No assets found.
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -113,25 +113,25 @@
             v-if="asset.status === 'processed'"
             class="inline-block mt-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
           >
-            Procesado
+            Processed
           </span>
           <span
             v-else
             class="inline-block mt-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
           >
-            Pendiente
+            Pending
           </span>
         </RouterLink>
       </div>
 
-      <!-- Paginación -->
+      <!-- Pagination -->
       <div v-if="!nlFilters && meta.last_page > 1" class="flex justify-center items-center gap-2">
         <button
           @click="changePage(meta.current_page - 1)"
           :disabled="meta.current_page === 1"
           class="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          ← Anterior
+          ← Previous
         </button>
 
         <button
@@ -153,12 +153,12 @@
           :disabled="meta.current_page === meta.last_page"
           class="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Siguiente →
+          Next →
         </button>
       </div>
 
       <p class="text-center text-sm text-gray-400">
-        {{ displayedAssets.length }} asset(s) {{ nlFilters ? 'encontrados por IA' : 'en total' }}
+        {{ displayedAssets.length }} asset(s) {{ nlFilters ? 'found by AI' : 'total' }}
       </p>
     </div>
   </AppLayout>
@@ -210,12 +210,12 @@ async function handleNLSearch() {
     const response = await api.post('/search', { query: nlQuery.value })
     nlAssets.value = response.data.data
     nlFilters.value = response.data.filters
-    toast.success(`IA encontró ${response.data.total} resultado(s)`)
+    toast.success(`AI found ${response.data.total} result(s)`)
   } catch (e) {
     if (e.response?.status === 503) {
-      toast.error('La IA está ocupada. Espera unos segundos e inténtalo de nuevo.')
+      toast.error('AI is busy. Wait a few seconds and try again.')
     } else {
-      toast.error('Error en la búsqueda inteligente.')
+      toast.error('Error in smart search.')
     }
     nlFilters.value = null
     nlAssets.value = []

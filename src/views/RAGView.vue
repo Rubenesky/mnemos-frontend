@@ -2,17 +2,17 @@
   <AppLayout>
     <div class="space-y-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">🧠 Chat con tus datos</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">🧠 Chat with your data</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Pregúntale a la IA cualquier cosa sobre los assets y usuarios de la plataforma.
+          Ask the AI anything about the assets and users on the platform.
         </p>
       </div>
 
-      <!-- Historial de chat -->
+      <!-- Chat history -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 min-h-96 space-y-4">
         <div v-if="messages.length === 0" class="text-center py-16 text-gray-400">
           <p class="text-4xl mb-3">🤖</p>
-          <p class="text-sm">Haz una pregunta sobre tus datos</p>
+          <p class="text-sm">Ask a question about your data</p>
           <div class="mt-4 space-y-2">
             <button
               v-for="example in examples"
@@ -26,7 +26,7 @@
         </div>
 
         <div v-for="(msg, i) in messages" :key="i">
-          <!-- Pregunta del usuario -->
+          <!-- User question -->
           <div class="flex justify-end">
             <div
               class="bg-blue-600 text-white px-4 py-2 rounded-xl rounded-tr-none max-w-md text-sm"
@@ -34,12 +34,12 @@
               {{ msg.question }}
             </div>
           </div>
-          <!-- Respuesta de la IA -->
+          <!-- AI response -->
           <div class="flex justify-start mt-2">
             <div
               class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-xl rounded-tl-none max-w-md text-sm"
             >
-              <span class="text-purple-600 dark:text-purple-400 font-medium">✨ IA: </span>
+              <span class="text-purple-600 dark:text-purple-400 font-medium">✨ AI: </span>
               {{ msg.answer }}
             </div>
           </div>
@@ -50,17 +50,17 @@
           <div
             class="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl rounded-tl-none text-sm text-gray-400"
           >
-            Consultando datos...
+            Querying data...
           </div>
         </div>
       </div>
 
-      <!-- Input -->
+      <!-- Input field -->
       <div class="flex gap-3">
         <input
           v-model="question"
           type="text"
-          placeholder="¿Cuántos assets subí esta semana?"
+          placeholder="How many assets did I upload this week?"
           class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleQuery"
         />
@@ -69,7 +69,7 @@
           :disabled="loading || !question"
           class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
         >
-          Preguntar
+          Ask
         </button>
       </div>
     </div>
@@ -88,11 +88,11 @@ const loading = ref(false)
 const messages = ref([])
 
 const examples = [
-  '¿Cuántos assets tengo subidos en la plataforma?',
-  '¿Qué assets subí esta semana?',
-  '¿Cuántos usuarios hay y qué roles tienen?',
-  '¿Cuál es el espacio total ocupado?',
-  '¿Cuál es el usuario más activo?',
+  'How many assets do I have uploaded on the platform?',
+  'What assets did I upload this week?',
+  'How many users are there and what roles do they have?',
+  'What is the total storage used?',
+  'Who is the most active user?',
 ]
 
 async function handleQuery() {
@@ -109,7 +109,7 @@ async function handleQuery() {
       answer: response.data.answer,
     })
   } catch (e) {
-    toast.error('Error al consultar la IA. Inténtalo de nuevo.')
+    toast.error('Error querying AI. Please try again.')
   } finally {
     loading.value = false
   }
