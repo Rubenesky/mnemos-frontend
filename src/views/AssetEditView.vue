@@ -52,6 +52,27 @@
             />
           </div>
 
+          <!-- Alt-text -->
+          <div class="mb-6">
+            <label
+              for="alt_text"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Alt-text <span class="text-gray-400 font-normal">(accessibility description)</span>
+            </label>
+            <textarea
+              id="alt_text"
+              v-model="form.alt_text"
+              rows="3"
+              maxlength="500"
+              placeholder="Describe what's in this image for screen readers..."
+              class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+            <p class="mt-1 text-xs text-gray-400">
+              Used by screen readers. Auto-generated for images — you can edit it.
+            </p>
+          </div>
+
           <!-- AI notice -->
           <div
             class="mb-6 p-3 bg-purple-50 dark:bg-purple-900 rounded-lg text-sm text-purple-700 dark:text-purple-300"
@@ -98,6 +119,7 @@ const form = ref({
   title: '',
   description: '',
   tags: '',
+  alt_text: '',
 })
 
 onMounted(async () => {
@@ -108,6 +130,7 @@ onMounted(async () => {
     form.value.title = asset.metadata?.title ?? ''
     form.value.description = asset.metadata?.description ?? ''
     form.value.tags = asset.metadata?.tags?.join(', ') ?? ''
+    form.value.alt_text = asset.alt_text ?? ''
   } catch (e) {
     toast.error('Error loading asset.')
   } finally {
@@ -123,6 +146,7 @@ async function handleUpdate() {
       title: form.value.title,
       description: form.value.description,
       tags: form.value.tags,
+      alt_text: form.value.alt_text,
     })
 
     toast.success('Asset updated successfully.')

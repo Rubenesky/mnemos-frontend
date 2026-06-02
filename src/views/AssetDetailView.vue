@@ -87,6 +87,17 @@
               <dt class="text-gray-500 dark:text-gray-400">Date</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ formatDate(asset.created_at) }}</dd>
             </div>
+            <div v-if="asset.mime_type.startsWith('image/')" class="flex justify-between items-start gap-4">
+              <dt class="text-gray-500 dark:text-gray-400 shrink-0">Alt-text</dt>
+              <dd class="text-right text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                <span v-if="asset.alt_text">{{ asset.alt_text }}</span>
+                <span v-else class="text-gray-400 dark:text-gray-500 italic">Not generated yet</span>
+                <span
+                  v-if="asset.alt_text"
+                  class="ai-badge"
+                >AI generated</span>
+              </dd>
+            </div>
           </dl>
         </div>
 
@@ -375,3 +386,16 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.ai-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background-color: #fef3c7;
+  color: #92400e;
+  white-space: nowrap;
+}
+</style>
