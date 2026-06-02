@@ -73,6 +73,23 @@
             </p>
           </div>
 
+          <!-- Publish toggle — hidden for volunteers -->
+          <div v-if="!auth.isVolunteer" class="mb-6">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                v-model="form.is_public"
+                type="checkbox"
+                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Publish to public gallery
+              </span>
+            </label>
+            <p class="mt-1 text-xs text-gray-400">
+              Published assets are visible to anyone visiting the public gallery.
+            </p>
+          </div>
+
           <!-- AI notice -->
           <div
             class="mb-6 p-3 bg-purple-50 dark:bg-purple-900 rounded-lg text-sm text-purple-700 dark:text-purple-300"
@@ -106,11 +123,13 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '../components/AppLayout.vue'
+import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const toast = useToastStore()
 
 const loading = ref(true)
@@ -120,6 +139,7 @@ const form = ref({
   description: '',
   tags: '',
   alt_text: '',
+  is_public: false,
 })
 
 onMounted(async () => {
@@ -131,6 +151,7 @@ onMounted(async () => {
     form.value.description = asset.metadata?.description ?? ''
     form.value.tags = asset.metadata?.tags?.join(', ') ?? ''
     form.value.alt_text = asset.alt_text ?? ''
+    form.value.is_public = asset.is_public ?? false
   } catch (e) {
     toast.error('Error loading asset.')
   } finally {
@@ -142,12 +163,17 @@ async function handleUpdate() {
   saving.value = true
 
   try {
-    await api.patch(`/assets/${route.params.id}`, {
+    const payload = {
       title: form.value.title,
       description: form.value.description,
       tags: form.value.tags,
       alt_text: form.value.alt_text,
-    })
+    }
+    // Only send is_public if the user is allowed to toggle it
+    if (!auth.isVolunteer) {
+      payload.is_public = form.value.is_public
+    }
+    await api.patch(`/assets/${route.params.id}`, payload)
 
     toast.success('Asset updated successfully.')
     router.push({ name: 'asset-detail', params: { id: route.params.id } })

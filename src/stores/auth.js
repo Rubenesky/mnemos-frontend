@@ -10,7 +10,7 @@ import api from '../api/axios'
  * helpers for role-based access control and login/logout actions that
  * communicate with the Mnemos API.
  *
- * @returns {{ token: import('vue').Ref<string|null>, user: import('vue').Ref<object|null>, isAuthenticated: import('vue').ComputedRef<boolean>, isAdmin: import('vue').ComputedRef<boolean>, isEditor: import('vue').ComputedRef<boolean>, login: Function, logout: Function }}
+ * @returns {{ token: import('vue').Ref<string|null>, user: import('vue').Ref<object|null>, isAuthenticated: import('vue').ComputedRef<boolean>, isAdmin: import('vue').ComputedRef<boolean>, isEditor: import('vue').ComputedRef<boolean>, isVolunteer: import('vue').ComputedRef<boolean>, isExpired: import('vue').ComputedRef<boolean>, login: Function, logout: Function }}
  */
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
@@ -24,6 +24,20 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** @type {import('vue').ComputedRef<boolean>} True when the current user has the editor role. */
   const isEditor = computed(() => user.value?.role === 'editor')
+
+  /** @type {import('vue').ComputedRef<boolean>} True when the current user has the volunteer role (and has not expired). */
+  const isVolunteer = computed(() => {
+    if (user.value?.role !== 'volunteer') return false
+    if (user.value?.expires_at != null && new Date(user.value.expires_at) < new Date()) return false
+    return true
+  })
+
+  /** @type {import('vue').ComputedRef<boolean>} True when the user is a volunteer whose expires_at is in the past. */
+  const isExpired = computed(() =>
+    user.value?.role === 'volunteer' &&
+    user.value?.expires_at != null &&
+    new Date(user.value.expires_at) < new Date()
+  )
 
   /**
    * Authenticate with email and password.
@@ -64,5 +78,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  return { token, user, isAuthenticated, isAdmin, isEditor, login, logout }
+  return { token, user, isAuthenticated, isAdmin, isEditor, isVolunteer, isExpired, login, logout }
 })

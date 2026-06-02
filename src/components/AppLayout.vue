@@ -42,6 +42,7 @@
               Public Gallery
             </RouterLink>
             <RouterLink
+              v-if="!auth.isVolunteer"
               to="/consents"
               class="nav-link"
               :class="{ 'nav-link--active': $route.path.startsWith('/consents') }"
@@ -120,6 +121,7 @@
           Public Gallery
         </RouterLink>
         <RouterLink
+          v-if="!auth.isVolunteer"
           to="/consents"
           class="mobile-nav-link"
           @click="menuOpen = false"
@@ -278,6 +280,11 @@ async function handleLogout() {
 
 .role-badge--viewer {
   background: var(--color-muted, #94a3b8);
+  color: #ffffff;
+}
+
+.role-badge--volunteer {
+  background: var(--color-volunteer, #8b5cf6);
   color: #ffffff;
 }
 
