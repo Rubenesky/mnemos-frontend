@@ -130,6 +130,39 @@
         </div>
       </div>
 
+      <!-- GDPR Consent Status (admin/editor only) -->
+      <div
+        v-if="auth.isAdmin || auth.isEditor"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow p-6"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-semibold text-gray-800 dark:text-gray-200">Consent Status</h2>
+          <RouterLink
+            :to="`/consents?asset_id=${asset.id}`"
+            class="text-sm text-amber-600 hover:underline font-medium"
+          >
+            Manage consents &rarr;
+          </RouterLink>
+        </div>
+
+        <div v-if="consentsLoading" class="text-sm text-gray-400">Loading consents...</div>
+
+        <div v-else-if="assetConsents.length === 0" class="text-sm text-gray-400">
+          No consent records for this asset.
+        </div>
+
+        <ul v-else class="space-y-2">
+          <li
+            v-for="consent in assetConsents"
+            :key="consent.id"
+            class="flex items-center justify-between gap-3 text-sm"
+          >
+            <span class="text-gray-800 dark:text-gray-200 font-medium">{{ consent.person_name }}</span>
+            <ConsentBadge :status="consent.status" />
+          </li>
+        </ul>
+      </div>
+
       <!-- AI variant generator -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div class="flex justify-between items-center mb-4">
@@ -223,6 +256,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '../components/AppLayout.vue'
+import ConsentBadge from '../components/ConsentBadge.vue'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
@@ -235,6 +269,8 @@ const loading = ref(true)
 const asset = ref(null)
 const variants = ref(null)
 const variantsLoading = ref(false)
+const assetConsents = ref([])
+const consentsLoading = ref(false)
 
 function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-GB', {
@@ -314,10 +350,24 @@ async function applyTag(tag) {
   }
 }
 
+async function fetchAssetConsents(assetId) {
+  if (!auth.isAdmin && !auth.isEditor) return
+  consentsLoading.value = true
+  try {
+    const { data } = await api.get('/consents', { params: { asset_id: assetId } })
+    assetConsents.value = data.data ?? data
+  } catch {
+    // Non-critical — section is simply empty on error
+  } finally {
+    consentsLoading.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const response = await api.get(`/assets/${route.params.id}`)
     asset.value = response.data.data
+    await fetchAssetConsents(route.params.id)
   } catch (e) {
     // error handled by axios interceptor
   } finally {

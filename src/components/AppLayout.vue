@@ -41,6 +41,13 @@
             >
               Public Gallery
             </RouterLink>
+            <RouterLink
+              to="/consents"
+              class="nav-link"
+              :class="{ 'nav-link--active': $route.path.startsWith('/consents') }"
+            >
+              GDPR
+            </RouterLink>
           </div>
         </div>
 
@@ -111,6 +118,13 @@
           @click="menuOpen = false"
         >
           Public Gallery
+        </RouterLink>
+        <RouterLink
+          to="/consents"
+          class="mobile-nav-link"
+          @click="menuOpen = false"
+        >
+          GDPR
         </RouterLink>
         <div class="mobile-menu-user">
           <p class="user-name">{{ auth.user?.name }}</p>

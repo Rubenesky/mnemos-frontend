@@ -71,6 +71,12 @@ const router = createRouter({
       // NO meta.requiresAuth — public route
     },
     {
+      path: '/consents',
+      name: 'consents',
+      component: () => import('@/views/ConsentPanelView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/welcome',
       name: 'onboarding',
       component: () => import('@/views/OnboardingView.vue'),
