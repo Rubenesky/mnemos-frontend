@@ -319,7 +319,7 @@ onMounted(async () => {
     const response = await api.get(`/assets/${route.params.id}`)
     asset.value = response.data.data
   } catch (e) {
-    console.error(e)
+    // error handled by axios interceptor
   } finally {
     loading.value = false
   }

@@ -89,6 +89,8 @@ router.beforeEach((to) => {
   if (to.meta.guest && auth.isAuthenticated) {
     return { name: 'dashboard' }
   }
+
+  return true
 })
 
 export default router

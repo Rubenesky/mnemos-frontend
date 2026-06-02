@@ -18,18 +18,18 @@ const MAX_SIZE_BYTES = 10 * 1024 * 1024
 function makeSetFile(selectedFile, toast) {
   return function setFile(file) {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error('Tipo de archivo no permitido. Usa imágenes, PDF, vídeo o audio.')
+      toast.error('File type not allowed. Use images, PDF, video or audio.')
       return
     }
     if (file.size > MAX_SIZE_BYTES) {
-      toast.error('El archivo supera el límite de 10MB.')
+      toast.error('File exceeds the 10MB limit.')
       return
     }
     selectedFile.value = file
   }
 }
 
-describe('setFile — validación de archivo', () => {
+describe('setFile — file validation', () => {
   let selectedFile
   let toast
   let setFile
@@ -40,29 +40,29 @@ describe('setFile — validación de archivo', () => {
     setFile = makeSetFile(selectedFile, toast)
   })
 
-  it('rechaza un archivo .exe y llama toast.error', () => {
-    const file = new File(['contenido'], 'malware.exe', { type: 'application/octet-stream' })
+  it('rejects a .exe file and calls toast.error', () => {
+    const file = new File(['content'], 'malware.exe', { type: 'application/octet-stream' })
 
     setFile(file)
 
     expect(toast.error).toHaveBeenCalledWith(
-      'Tipo de archivo no permitido. Usa imágenes, PDF, vídeo o audio.',
+      'File type not allowed. Use images, PDF, video or audio.',
     )
     expect(selectedFile.value).toBeNull()
   })
 
-  it('rechaza un archivo mayor de 10MB y llama toast.error', () => {
+  it('rejects a file larger than 10MB and calls toast.error', () => {
     const bigContent = new Uint8Array(11 * 1024 * 1024)
-    const file = new File([bigContent], 'grande.jpg', { type: 'image/jpeg' })
+    const file = new File([bigContent], 'large.jpg', { type: 'image/jpeg' })
 
     setFile(file)
 
-    expect(toast.error).toHaveBeenCalledWith('El archivo supera el límite de 10MB.')
+    expect(toast.error).toHaveBeenCalledWith('File exceeds the 10MB limit.')
     expect(selectedFile.value).toBeNull()
   })
 
-  it('acepta un .jpg válido y asigna selectedFile', () => {
-    const file = new File(['imagen'], 'foto.jpg', { type: 'image/jpeg' })
+  it('accepts a valid .jpg and assigns selectedFile', () => {
+    const file = new File(['image'], 'photo.jpg', { type: 'image/jpeg' })
 
     setFile(file)
 

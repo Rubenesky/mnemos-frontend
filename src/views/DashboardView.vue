@@ -65,7 +65,7 @@ onMounted(async () => {
     stats.value.processed = assets.filter((a) => a.status === 'processed').length
     stats.value.pending = assets.filter((a) => a.status === 'pending').length
   } catch (e) {
-    console.error(e)
+    // error handled by axios interceptor
   } finally {
     loading.value = false
   }

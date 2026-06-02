@@ -237,7 +237,7 @@ async function fetchAssets(page = 1) {
     assets.value = response.data.data
     meta.value = response.data.meta
   } catch (e) {
-    console.error(e)
+    // error handled by axios interceptor
   } finally {
     loading.value = false
   }

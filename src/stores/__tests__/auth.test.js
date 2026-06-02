@@ -21,7 +21,7 @@ describe('useAuthStore', () => {
     vi.clearAllMocks()
   })
 
-  it('login guarda token y user en el store', async () => {
+  it('login saves token and user to the store', async () => {
     api.post.mockResolvedValueOnce({
       data: {
         token: 'fake-token-123',
@@ -38,7 +38,7 @@ describe('useAuthStore', () => {
     expect(localStorage.getItem('token')).toBe('fake-token-123')
   })
 
-  it('logout limpia token, user e isAuthenticated', async () => {
+  it('logout clears token, user, and isAuthenticated', async () => {
     api.post.mockResolvedValueOnce({
       data: { token: 'tk', user: { id: 1, name: 'R', email: 'r@t.com', role: 'admin' } },
     })
@@ -54,7 +54,7 @@ describe('useAuthStore', () => {
     expect(localStorage.getItem('token')).toBeNull()
   })
 
-  it('isAuthenticated es true con token y false sin él', () => {
+  it('isAuthenticated is true with a token and false without one', () => {
     const auth = useAuthStore()
 
     expect(auth.isAuthenticated).toBe(false)
