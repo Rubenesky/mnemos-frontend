@@ -1,121 +1,109 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+  <div class="app-shell">
     <!-- Toast notifications -->
     <ToastNotification />
 
     <!-- Navbar -->
-    <nav class="bg-white dark:bg-gray-800 shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center">
-          <div class="flex items-center gap-6">
-            <span class="font-bold text-blue-600 text-lg">Mnemos</span>
-            <div class="hidden sm:flex gap-4">
-              <RouterLink
-                to="/dashboard"
-                class="text-gray-600 dark:text-gray-300 hover:text-blue-600 text-sm font-medium"
-                active-class="text-blue-600"
-              >
-                Dashboard
-              </RouterLink>
-              <RouterLink
-                to="/assets"
-                class="text-gray-600 dark:text-gray-300 hover:text-blue-600 text-sm font-medium"
-                active-class="text-blue-600"
-              >
-                Assets
-              </RouterLink>
-              <RouterLink
-                to="/rag"
-                class="text-gray-600 dark:text-gray-300 hover:text-blue-600 text-sm font-medium"
-                active-class="text-blue-600"
-              >
-                🧠 AI Chat
-              </RouterLink>
-            </div>
-          </div>
+    <nav class="mnemos-navbar">
+      <div class="navbar-inner">
+        <!-- Left: logo + wordmark + nav links -->
+        <div class="navbar-left">
+          <RouterLink to="/dashboard" class="navbar-brand">
+            <MnemosLogo />
+          </RouterLink>
 
-          <div class="hidden sm:flex items-center gap-4">
-            <span class="text-sm text-gray-600 dark:text-gray-300">{{ auth.user?.name }}</span>
-            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full capitalize">
-              {{ auth.user?.role }}
-            </span>
-            <button
-              @click="theme.toggle()"
-              class="text-gray-500 dark:text-gray-300 hover:text-blue-600 text-lg"
-              :title="theme.isDark ? 'Light mode' : 'Dark mode'"
+          <div class="nav-links hidden-mobile">
+            <RouterLink
+              to="/dashboard"
+              class="nav-link"
+              :class="{ 'nav-link--active': $route.path.startsWith('/dashboard') }"
             >
-              {{ theme.isDark ? '☀️' : '🌙' }}
-            </button>
-            <button @click="handleLogout" class="text-sm text-red-600 hover:underline">
-              Sign out
-            </button>
+              Dashboard
+            </RouterLink>
+            <RouterLink
+              to="/assets"
+              class="nav-link"
+              :class="{ 'nav-link--active': $route.path.startsWith('/assets') }"
+            >
+              Assets
+            </RouterLink>
+            <RouterLink
+              to="/rag"
+              class="nav-link"
+              :class="{ 'nav-link--active': $route.path.startsWith('/rag') }"
+            >
+              AI Chat
+            </RouterLink>
           </div>
+        </div>
 
-          <!-- Mobile menu toggle -->
-          <div class="sm:hidden flex items-center gap-3">
-            <button @click="theme.toggle()" class="text-gray-500 dark:text-gray-300">
-              {{ theme.isDark ? '☀️' : '🌙' }}
-            </button>
-            <button
-              class="text-gray-600 dark:text-gray-300 hover:text-blue-600"
-              @click="menuOpen = !menuOpen"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  v-if="!menuOpen"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-                <path
-                  v-else
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+        <!-- Right: user info + logout -->
+        <div class="navbar-right hidden-mobile">
+          <span class="user-name">{{ auth.user?.name }}</span>
+          <span class="role-badge" :class="`role-badge--${auth.user?.role}`">
+            {{ auth.user?.role }}
+          </span>
+          <button @click="handleLogout" class="btn-secondary">
+            Sign out
+          </button>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <div class="mobile-menu-toggle">
+          <button
+            class="hamburger-btn"
+            @click="menuOpen = !menuOpen"
+            aria-label="Toggle menu"
+          >
+            <svg class="hamburger-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                v-if="!menuOpen"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+              <path
+                v-else
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <!-- Mobile menu dropdown -->
-      <div
-        v-if="menuOpen"
-        class="sm:hidden border-t border-gray-100 dark:border-gray-700 px-4 py-3 space-y-3 bg-white dark:bg-gray-800"
-      >
+      <!-- Mobile dropdown menu -->
+      <div v-if="menuOpen" class="mobile-menu">
         <RouterLink
           to="/dashboard"
-          class="block text-gray-600 dark:text-gray-300 hover:text-blue-600 text-sm font-medium"
-          active-class="text-blue-600"
+          class="mobile-nav-link"
           @click="menuOpen = false"
         >
           Dashboard
         </RouterLink>
         <RouterLink
           to="/assets"
-          class="block text-gray-600 dark:text-gray-300 hover:text-blue-600 text-sm font-medium"
-          active-class="text-blue-600"
+          class="mobile-nav-link"
           @click="menuOpen = false"
         >
           Assets
         </RouterLink>
         <RouterLink
           to="/rag"
-          class="block text-gray-600 dark:text-gray-300 hover:text-blue-600 text-sm font-medium"
-          active-class="text-blue-600"
+          class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          🧠 AI Chat
+          AI Chat
         </RouterLink>
-        <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
-          <p class="text-sm text-gray-600 dark:text-gray-300">{{ auth.user?.name }}</p>
-          <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full capitalize">
+        <div class="mobile-menu-user">
+          <p class="user-name">{{ auth.user?.name }}</p>
+          <span class="role-badge" :class="`role-badge--${auth.user?.role}`">
             {{ auth.user?.role }}
           </span>
-          <button @click="handleLogout" class="block mt-2 text-sm text-red-600 hover:underline">
+          <button @click="handleLogout" class="btn-secondary mobile-logout">
             Sign out
           </button>
         </div>
@@ -123,9 +111,24 @@
     </nav>
 
     <!-- Main content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <main class="main-content">
       <slot />
     </main>
+
+    <!-- Footer -->
+    <footer class="mnemos-footer">
+      <div class="footer-inner">
+        <p class="footer-tagline">Open memory for organizations that matter</p>
+        <a
+          href="https://github.com/rubenesky/mnemos-frontend"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer-github"
+        >
+          GitHub
+        </a>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -133,13 +136,12 @@
 import { ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
-import { useThemeStore } from '../stores/theme'
 import { useRouter } from 'vue-router'
 import ToastNotification from './ToastNotification.vue'
+import MnemosLogo from './MnemosLogo.vue'
 
 const auth = useAuthStore()
 const toast = useToastStore()
-const theme = useThemeStore()
 const router = useRouter()
 const menuOpen = ref(false)
 
@@ -149,3 +151,232 @@ async function handleLogout() {
   router.push({ name: 'login' })
 }
 </script>
+
+<style scoped>
+/* ── Shell ── */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+/* ── Navbar ── */
+.mnemos-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-navy, #0f172a);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.navbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Brand ── */
+.navbar-brand {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Nav links ── */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover,
+.nav-link--active {
+  color: var(--color-gold, #f59e0b);
+}
+
+/* ── Right side ── */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-name {
+  color: var(--color-muted, #94a3b8);
+  font-size: 0.875rem;
+}
+
+/* ── Role badge ── */
+.role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.03em;
+}
+
+.role-badge--admin {
+  background: var(--color-gold, #f59e0b);
+  color: var(--color-navy, #0f172a);
+}
+
+.role-badge--editor {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.role-badge--viewer {
+  background: var(--color-muted, #94a3b8);
+  color: #ffffff;
+}
+
+/* ── Secondary button ── */
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-muted, #94a3b8);
+  color: #ffffff;
+  padding: 0.375rem 0.875rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+/* ── Mobile ── */
+.mobile-menu-toggle {
+  display: none;
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: #ffffff;
+}
+
+.hamburger-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mobile-menu {
+  background: var(--color-navy, #0f172a);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mobile-nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  transition: color 0.15s ease;
+}
+
+.mobile-nav-link:hover {
+  color: var(--color-gold, #f59e0b);
+}
+
+.mobile-menu-user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-logout {
+  align-self: flex-start;
+}
+
+/* ── Main content ── */
+.main-content {
+  flex: 1;
+  padding-top: 4rem;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+/* ── Footer ── */
+.mnemos-footer {
+  background: var(--color-navy, #0f172a);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-tagline {
+  color: var(--color-muted, #94a3b8);
+  font-size: 0.8125rem;
+}
+
+.footer-github {
+  color: var(--color-gold, #f59e0b);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.footer-github:hover {
+  opacity: 0.8;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .hidden-mobile {
+    display: none;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+}
+</style>

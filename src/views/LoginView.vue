@@ -1,40 +1,44 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
-      <h1 class="text-2xl font-bold text-gray-800 mb-1 text-center">Mnemos</h1>
-      <p class="text-sm text-gray-500 text-center mb-6">Open memory for organizations that matter</p>
+  <div class="login-page">
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="login-header">
+        <MnemosLogo />
+        <p class="login-tagline">Open memory for organizations that matter</p>
+      </div>
 
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1"> Email </label>
+      <!-- Form -->
+      <form @submit.prevent="handleLogin" class="login-form">
+        <div class="form-group">
+          <label class="form-label">Email</label>
           <input
             v-model="email"
             type="email"
             required
             placeholder="you@example.com"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="form-input"
           />
         </div>
 
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-1"> Password </label>
+        <div class="form-group">
+          <label class="form-label">Password</label>
           <input
             v-model="password"
             type="password"
             required
             placeholder="••••••••"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="form-input"
           />
         </div>
 
-        <div v-if="error" class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+        <div v-if="error" class="form-error">
           {{ error }}
         </div>
 
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+          class="btn-primary"
         >
           {{ loading ? 'Signing in…' : 'Sign in' }}
         </button>
@@ -47,6 +51,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import MnemosLogo from '../components/MnemosLogo.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -70,3 +75,120 @@ async function handleLogin() {
   }
 }
 </script>
+
+<style scoped>
+/* ── Full-page background ── */
+.login-page {
+  min-height: 100vh;
+  background: var(--color-navy, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+/* ── Card ── */
+.login-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ── Header ── */
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+/* Override logo wordmark color for card context (navy background gone) */
+.login-header :deep(.mnemos-wordmark) {
+  color: var(--color-navy, #0f172a);
+}
+
+.login-tagline {
+  color: var(--color-muted, #94a3b8);
+  font-size: 0.8125rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Form ── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-input {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  color: #111827;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  background: #ffffff;
+}
+
+.form-input:focus {
+  border-color: var(--color-gold, #f59e0b);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+/* ── Error ── */
+.form-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+/* ── Primary button ── */
+.btn-primary {
+  width: 100%;
+  background: var(--color-gold, #f59e0b);
+  color: var(--color-navy, #0f172a);
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>
