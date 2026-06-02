@@ -32,7 +32,7 @@
       </div>
 
       <!-- CTA -->
-      <button class="btn-get-started" @click="handleGetStarted">
+      <button type="button" class="btn-get-started" @click="handleGetStarted">
         Get started
       </button>
     </div>
@@ -169,5 +169,10 @@ function handleGetStarted() {
 
 .btn-get-started:hover {
   opacity: 0.9;
+}
+
+.btn-get-started:focus-visible {
+  outline: 2px solid var(--color-white, #ffffff);
+  outline-offset: 3px;
 }
 </style>

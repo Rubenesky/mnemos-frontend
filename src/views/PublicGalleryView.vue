@@ -83,7 +83,10 @@
             v-for="asset in assets"
             :key="asset.id"
             class="asset-card"
+            role="button"
+            tabindex="0"
             @click="openAsset(asset)"
+            @keydown.enter="openAsset(asset)"
           >
             <!-- Thumbnail or type icon -->
             <div class="asset-card-thumb">
@@ -112,7 +115,7 @@
                   {{ tag }}
                 </span>
               </div>
-              <span class="asset-view-link">View &rarr;</span>
+              <span class="asset-view-link">View →</span>
             </div>
           </article>
         </div>
@@ -120,7 +123,7 @@
     </main>
 
     <!-- Asset detail modal -->
-    <div v-if="activeAsset" class="modal-overlay" @click.self="closeAsset">
+    <div v-if="activeAsset" class="modal-overlay" @click.self="closeAsset" @keydown.escape="closeAsset">
       <div class="modal-card" role="dialog" aria-modal="true" :aria-label="getTitle(activeAsset)">
         <button class="modal-close" @click="closeAsset" aria-label="Close">&times;</button>
 
@@ -171,6 +174,8 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import MnemosLogo from '@/components/MnemosLogo.vue'
+import { useToastStore } from '@/stores/toast'
+const toast = useToastStore()
 
 // Public axios instance — no auth token attached
 const publicApi = axios.create({
@@ -211,6 +216,7 @@ async function fetchCollections() {
       await selectCollection(collections.value[0])
     }
   } catch {
+    toast.error('Failed to load collections. Please try again.')
     collections.value = []
   } finally {
     loadingCollections.value = false
@@ -233,6 +239,7 @@ async function selectCollection(col) {
       assets.value = []
     }
   } catch {
+    toast.error('Failed to load collection. Please try again.')
     assets.value = []
   } finally {
     loadingAssets.value = false
@@ -246,6 +253,7 @@ async function openAsset(asset) {
     const { data } = await publicApi.get(`/public/assets/${asset.id}`)
     activeAsset.value = data.data ?? data
   } catch {
+    toast.error('Failed to load asset details.')
     // keep the data we already have from the list
   } finally {
     loadingDetail.value = false
@@ -375,6 +383,11 @@ function formatDate(dateStr) {
   border-color: #ffffff;
 }
 
+.collection-pill:focus-visible {
+  outline: 2px solid var(--color-gold, #f59e0b);
+  outline-offset: 2px;
+}
+
 .collection-pill--active {
   background: var(--color-gold, #f59e0b);
   border-color: var(--color-gold, #f59e0b);
@@ -423,6 +436,11 @@ function formatDate(dateStr) {
 .asset-card:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.asset-card:focus-visible {
+  outline: 2px solid var(--color-gold, #f59e0b);
+  outline-offset: 2px;
 }
 
 /* ── Card thumbnail ── */
