@@ -17,6 +17,7 @@
             required
             placeholder="you@example.com"
             class="form-input"
+            :disabled="loading"
           />
         </div>
 
@@ -28,10 +29,11 @@
             required
             placeholder="••••••••"
             class="form-input"
+            :disabled="loading"
           />
         </div>
 
-        <div v-if="error" class="form-error">
+        <div v-if="error" class="form-error" aria-live="polite" role="alert">
           {{ error }}
         </div>
 
@@ -89,7 +91,7 @@ async function handleLogin() {
 
 /* ── Card ── */
 .login-card {
-  background: #ffffff;
+  background: var(--color-white);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
   padding: 2.5rem 2rem;
@@ -134,16 +136,16 @@ async function handleLogin() {
 .form-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-form-text);
 }
 
 .form-input {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-form-border);
   border-radius: 8px;
   padding: 0.625rem 0.75rem;
   font-size: 0.9375rem;
   font-family: var(--font-sans, 'Inter', sans-serif);
-  color: #111827;
+  color: var(--color-form-text);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   background: #ffffff;
@@ -155,14 +157,14 @@ async function handleLogin() {
 }
 
 .form-input::placeholder {
-  color: #9ca3af;
+  color: var(--color-input-placeholder);
 }
 
 /* ── Error ── */
 .form-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
   border-radius: 8px;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;

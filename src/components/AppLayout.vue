@@ -158,7 +158,7 @@ async function handleLogout() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: var(--color-light-bg);
 }
 
 /* ── Navbar ── */
@@ -244,7 +244,7 @@ async function handleLogout() {
 }
 
 .role-badge--editor {
-  background: #3b82f6;
+  background: var(--color-editor);
   color: #ffffff;
 }
 
