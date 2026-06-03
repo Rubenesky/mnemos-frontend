@@ -233,6 +233,8 @@ async function selectCollection(col) {
     const { data } = await publicApi.get(`/public/collections/${slug}`)
     if (Array.isArray(data)) {
       assets.value = data
+    } else if (data.assets?.data && Array.isArray(data.assets.data)) {
+      assets.value = data.assets.data
     } else if (Array.isArray(data.assets)) {
       assets.value = data.assets
     } else if (Array.isArray(data.data)) {
