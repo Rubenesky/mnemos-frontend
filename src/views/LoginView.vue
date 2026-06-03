@@ -10,7 +10,7 @@
       <!-- Form -->
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label class="form-label">Email</label>
+          <label class="form-label">{{ t('auth.email') }}</label>
           <input
             v-model="email"
             type="email"
@@ -22,7 +22,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <label class="form-label">{{ t('auth.password') }}</label>
           <input
             v-model="password"
             type="password"
@@ -42,7 +42,7 @@
           :disabled="loading"
           class="btn-primary"
         >
-          {{ loading ? 'Signing in…' : 'Sign in' }}
+          {{ loading ? t('auth.signingIn') : t('auth.login') }}
         </button>
       </form>
     </div>
@@ -51,10 +51,12 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import MnemosLogo from '../components/MnemosLogo.vue'
 
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 
@@ -75,7 +77,7 @@ async function handleLogin() {
       router.push({ name: 'dashboard' })
     }
   } catch (e) {
-    error.value = 'Invalid credentials. Please try again.'
+    error.value = t('auth.invalidCredentials')
   } finally {
     loading.value = false
   }

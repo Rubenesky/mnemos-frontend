@@ -7,7 +7,7 @@
       </div>
 
       <!-- Tagline -->
-      <p class="onboarding-tagline">Open memory for organizations that matter</p>
+      <p class="onboarding-tagline">{{ t('onboarding.tagline') }}</p>
 
       <!-- Divider -->
       <div class="onboarding-divider"></div>
@@ -16,33 +16,35 @@
       <div class="features-grid">
         <div class="feature-item">
           <div class="feature-icon">📁</div>
-          <h3 class="feature-title">Archive</h3>
-          <p class="feature-desc">Organize your digital assets in structured collections</p>
+          <h3 class="feature-title">{{ t('onboarding.features.archive.title') }}</h3>
+          <p class="feature-desc">{{ t('onboarding.features.archive.desc') }}</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🔒</div>
-          <h3 class="feature-title">GDPR</h3>
-          <p class="feature-desc">Track consent and comply with data protection laws</p>
+          <h3 class="feature-title">{{ t('onboarding.features.gdpr.title') }}</h3>
+          <p class="feature-desc">{{ t('onboarding.features.gdpr.desc') }}</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🌐</div>
-          <h3 class="feature-title">Share</h3>
-          <p class="feature-desc">Share collections publicly with donors and press</p>
+          <h3 class="feature-title">{{ t('onboarding.features.share.title') }}</h3>
+          <p class="feature-desc">{{ t('onboarding.features.share.desc') }}</p>
         </div>
       </div>
 
       <!-- CTA -->
       <button type="button" class="btn-get-started" @click="handleGetStarted">
-        Get started
+        {{ t('onboarding.getStarted') }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import MnemosLogo from '@/components/MnemosLogo.vue'
 
+const { t } = useI18n()
 const router = useRouter()
 
 function handleGetStarted() {

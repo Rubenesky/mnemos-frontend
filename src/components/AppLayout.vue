@@ -18,28 +18,28 @@
               class="nav-link"
               :class="{ 'nav-link--active': $route.path.startsWith('/dashboard') }"
             >
-              Dashboard
+              {{ t('nav.dashboard') }}
             </RouterLink>
             <RouterLink
               to="/assets"
               class="nav-link"
               :class="{ 'nav-link--active': $route.path.startsWith('/assets') }"
             >
-              Assets
+              {{ t('nav.assets') }}
             </RouterLink>
             <RouterLink
               to="/rag"
               class="nav-link"
               :class="{ 'nav-link--active': $route.path.startsWith('/rag') }"
             >
-              AI Chat
+              {{ t('nav.aiChat') }}
             </RouterLink>
             <RouterLink
               to="/gallery"
               class="nav-link"
               :class="{ 'nav-link--active': $route.path.startsWith('/gallery') }"
             >
-              Public Gallery
+              {{ t('nav.publicGallery') }}
             </RouterLink>
             <RouterLink
               v-if="!auth.isVolunteer"
@@ -47,7 +47,7 @@
               class="nav-link"
               :class="{ 'nav-link--active': $route.path.startsWith('/consents') }"
             >
-              GDPR
+              {{ t('nav.consents') }}
             </RouterLink>
           </div>
         </div>
@@ -58,8 +58,9 @@
           <span class="role-badge" :class="`role-badge--${auth.user?.role}`">
             {{ auth.user?.role }}
           </span>
+          <LanguageSelector />
           <button @click="handleLogout" class="btn-secondary">
-            Sign out
+            {{ t('nav.logout') }}
           </button>
         </div>
 
@@ -97,28 +98,28 @@
           class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          Dashboard
+          {{ t('nav.dashboard') }}
         </RouterLink>
         <RouterLink
           to="/assets"
           class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          Assets
+          {{ t('nav.assets') }}
         </RouterLink>
         <RouterLink
           to="/rag"
           class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          AI Chat
+          {{ t('nav.aiChat') }}
         </RouterLink>
         <RouterLink
           to="/gallery"
           class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          Public Gallery
+          {{ t('nav.publicGallery') }}
         </RouterLink>
         <RouterLink
           v-if="!auth.isVolunteer"
@@ -126,15 +127,16 @@
           class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          GDPR
+          {{ t('nav.consents') }}
         </RouterLink>
         <div class="mobile-menu-user">
           <p class="user-name">{{ auth.user?.name }}</p>
           <span class="role-badge" :class="`role-badge--${auth.user?.role}`">
             {{ auth.user?.role }}
           </span>
+          <LanguageSelector />
           <button @click="handleLogout" class="btn-secondary mobile-logout">
-            Sign out
+            {{ t('nav.logout') }}
           </button>
         </div>
       </div>
@@ -164,12 +166,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import { useRouter } from 'vue-router'
 import ToastNotification from './ToastNotification.vue'
 import MnemosLogo from './MnemosLogo.vue'
+import LanguageSelector from './LanguageSelector.vue'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const toast = useToastStore()
 const router = useRouter()
