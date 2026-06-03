@@ -3,14 +3,14 @@
     <!-- Page header -->
     <div class="cp-header">
       <div>
-        <h1 class="cp-title">GDPR Consent Management</h1>
-        <p class="cp-subtitle">Track and document consent for individuals appearing in your assets</p>
+        <h1 class="cp-title">{{ t('consent.title') }}</h1>
+        <p class="cp-subtitle">{{ t('consent.subtitle') }}</p>
       </div>
       <div class="cp-header-actions">
         <button class="btn-secondary" @click="exportCsv" :disabled="exportLoading">
-          {{ exportLoading ? 'Exporting...' : 'Export CSV' }}
+          {{ exportLoading ? t('consent.exporting') : t('consent.exportCsv') }}
         </button>
-        <button class="btn-primary" @click="openAddModal">Add Consent</button>
+        <button class="btn-primary" @click="openAddModal">{{ t('consent.add') }}</button>
       </div>
     </div>
 
@@ -31,7 +31,7 @@
         v-model="searchQuery"
         type="search"
         class="cp-search"
-        placeholder="Search by person name..."
+        :placeholder="t('consent.searchPlaceholder')"
         @input="onSearchInput"
       />
     </div>
@@ -39,11 +39,11 @@
     <!-- Consent table card -->
     <div class="cp-table-card">
       <!-- Loading -->
-      <div v-if="loading" class="cp-loading">Loading consents...</div>
+      <div v-if="loading" class="cp-loading">{{ t('consent.loading') }}</div>
 
       <!-- Empty -->
       <div v-else-if="consents.length === 0" class="cp-empty">
-        No consent records found.
+        {{ t('consent.noRecords') }}
       </div>
 
       <!-- Table -->
@@ -51,12 +51,12 @@
         <table class="cp-table">
           <thead>
             <tr>
-              <th>Asset</th>
-              <th>Person</th>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>{{ t('consent.table.asset') }}</th>
+              <th>{{ t('consent.table.person') }}</th>
+              <th>{{ t('consent.table.date') }}</th>
+              <th>{{ t('consent.table.type') }}</th>
+              <th>{{ t('consent.table.status') }}</th>
+              <th>{{ t('consent.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -131,17 +131,17 @@
           :disabled="pagination.current_page <= 1"
           @click="goToPage(pagination.current_page - 1)"
         >
-          Previous
+          {{ t('consent.pagination.previous') }}
         </button>
         <span class="pagination-info">
-          Page {{ pagination.current_page }} of {{ pagination.last_page }}
+          {{ t('consent.pagination.page') }} {{ pagination.current_page }} {{ t('consent.pagination.of') }} {{ pagination.last_page }}
         </span>
         <button
           class="btn-secondary"
           :disabled="pagination.current_page >= pagination.last_page"
           @click="goToPage(pagination.current_page + 1)"
         >
-          Next
+          {{ t('consent.pagination.next') }}
         </button>
       </div>
     </div>
@@ -153,18 +153,18 @@
       @click.self="closeFormModal"
       @keydown.escape.window="closeFormModal"
     >
-      <div class="modal-card" role="dialog" aria-modal="true" :aria-label="editingConsent ? 'Edit Consent' : 'Add Consent'">
+      <div class="modal-card" role="dialog" aria-modal="true" :aria-label="editingConsent ? t('consent.modal.editTitle') : t('consent.modal.addTitle')">
         <div class="modal-header">
-          <h2 class="modal-title">{{ editingConsent ? 'Edit Consent' : 'Add Consent' }}</h2>
+          <h2 class="modal-title">{{ editingConsent ? t('consent.modal.editTitle') : t('consent.modal.addTitle') }}</h2>
           <button class="modal-close" @click="closeFormModal" aria-label="Close">&times;</button>
         </div>
 
         <form @submit.prevent="saveConsent" class="modal-form">
           <!-- Asset -->
           <div class="form-field">
-            <label class="form-label" for="c-asset">Asset</label>
+            <label class="form-label" for="c-asset">{{ t('consent.form.asset') }}</label>
             <select id="c-asset" v-model="form.asset_id" class="form-input" required>
-              <option value="" disabled>Select an asset...</option>
+              <option value="" disabled>{{ t('consent.form.selectAsset') }}</option>
               <option v-for="a in assets" :key="a.id" :value="a.id">
                 {{ a.original_name }}
               </option>
@@ -174,7 +174,7 @@
 
           <!-- Person name -->
           <div class="form-field">
-            <label class="form-label" for="c-person">Person Name</label>
+            <label class="form-label" for="c-person">{{ t('consent.form.personName') }}</label>
             <input
               id="c-person"
               v-model="form.person_name"
@@ -188,7 +188,7 @@
 
           <!-- Consent date -->
           <div class="form-field">
-            <label class="form-label" for="c-date">Consent Date</label>
+            <label class="form-label" for="c-date">{{ t('consent.form.consentDate') }}</label>
             <input
               id="c-date"
               v-model="form.consent_date"
@@ -201,25 +201,25 @@
 
           <!-- Type -->
           <div class="form-field">
-            <label class="form-label" for="c-type">Type</label>
+            <label class="form-label" for="c-type">{{ t('consent.form.type') }}</label>
             <select id="c-type" v-model="form.type" class="form-input" required>
-              <option value="" disabled>Select type...</option>
-              <option value="photo">Photo</option>
-              <option value="video">Video</option>
-              <option value="audio">Audio</option>
-              <option value="general">General</option>
+              <option value="" disabled>{{ t('consent.form.selectType') }}</option>
+              <option value="photo">{{ t('consent.form.typePhoto') }}</option>
+              <option value="video">{{ t('consent.form.typeVideo') }}</option>
+              <option value="audio">{{ t('consent.form.typeAudio') }}</option>
+              <option value="general">{{ t('consent.form.typeGeneral') }}</option>
             </select>
             <span v-if="formErrors.type" class="form-error">{{ formErrors.type }}</span>
           </div>
 
           <!-- Status -->
           <div class="form-field">
-            <label class="form-label" for="c-status">Status</label>
+            <label class="form-label" for="c-status">{{ t('consent.form.status') }}</label>
             <select id="c-status" v-model="form.status" class="form-input" required>
-              <option value="" disabled>Select status...</option>
-              <option value="obtained">Obtained</option>
-              <option value="pending">Pending</option>
-              <option value="denied">Denied</option>
+              <option value="" disabled>{{ t('consent.form.selectStatus') }}</option>
+              <option value="obtained">{{ t('consent.status.obtained') }}</option>
+              <option value="pending">{{ t('consent.status.pending') }}</option>
+              <option value="denied">{{ t('consent.status.denied') }}</option>
             </select>
             <span v-if="formErrors.status" class="form-error">{{ formErrors.status }}</span>
           </div>
@@ -227,7 +227,7 @@
           <!-- Notes -->
           <div class="form-field">
             <label class="form-label" for="c-notes">
-              Notes <span class="form-optional">(optional)</span>
+              {{ t('consent.form.notes') }} <span class="form-optional">{{ t('consent.form.notesOptional') }}</span>
             </label>
             <textarea
               id="c-notes"
@@ -242,7 +242,7 @@
           <!-- Document upload -->
           <div class="form-field">
             <label class="form-label" for="c-document">
-              Document <span class="form-optional">(optional, PDF/JPG/PNG)</span>
+              {{ t('consent.form.document') }} <span class="form-optional">{{ t('consent.form.documentOptional') }}</span>
             </label>
             <input
               id="c-document"
@@ -256,9 +256,9 @@
 
           <!-- Modal actions -->
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" @click="closeFormModal">Cancel</button>
+            <button type="button" class="btn-secondary" @click="closeFormModal">{{ t('common.cancel') }}</button>
             <button type="submit" class="btn-primary" :disabled="formLoading">
-              {{ formLoading ? 'Saving...' : 'Save' }}
+              {{ formLoading ? t('consent.modal.saving') : t('common.save') }}
             </button>
           </div>
         </form>
@@ -274,14 +274,14 @@
     >
       <div class="modal-card modal-card--sm" role="dialog" aria-modal="true" aria-label="Confirm deletion">
         <div class="modal-header">
-          <h2 class="modal-title">Delete Consent Record</h2>
+          <h2 class="modal-title">{{ t('consent.modal.deleteTitle') }}</h2>
           <button class="modal-close" @click="closeDeleteModal" aria-label="Close">&times;</button>
         </div>
-        <p class="delete-confirm-text">Delete this consent record? This action cannot be undone.</p>
+        <p class="delete-confirm-text">{{ t('consent.modal.deleteText') }}</p>
         <div class="modal-actions modal-actions--delete">
-          <button class="btn-secondary" @click="closeDeleteModal">Cancel</button>
+          <button class="btn-secondary" @click="closeDeleteModal">{{ t('common.cancel') }}</button>
           <button class="btn-danger" @click="confirmDelete" :disabled="deleteLoading">
-            {{ deleteLoading ? 'Deleting...' : 'Confirm' }}
+            {{ deleteLoading ? t('consent.modal.deleting') : t('common.confirm') }}
           </button>
         </div>
       </div>
@@ -290,13 +290,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/AppLayout.vue'
 import ConsentBadge from '@/components/ConsentBadge.vue'
 import api from '@/api/axios'
 import { useToastStore } from '@/stores/toast'
 
+const { t } = useI18n()
 const toast = useToastStore()
 const route = useRoute()
 
@@ -318,12 +320,12 @@ const statusFilter = ref('')
 const searchQuery = ref('')
 let searchDebounce = null
 
-const statusOptions = [
-  { label: 'All', value: '' },
-  { label: 'Obtained', value: 'obtained' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Denied', value: 'denied' },
-]
+const statusOptions = computed(() => [
+  { label: t('consent.filter.all'), value: '' },
+  { label: t('consent.filter.obtained'), value: 'obtained' },
+  { label: t('consent.filter.pending'), value: 'pending' },
+  { label: t('consent.filter.denied'), value: 'denied' },
+])
 
 function emptyForm() {
   return {
@@ -356,8 +358,8 @@ async function fetchConsents(page = 1) {
     if (route.query.asset_id) params.asset_id = route.query.asset_id
 
     const { data } = await api.get('/consents', { params })
-    consents.value = data.data ?? data
-    pagination.value = data.meta ?? null
+    consents.value = data.data?.data ?? []
+    pagination.value = data.data ?? null
   } catch (e) {
     if (e?.response?.status === 403) {
       toast.error('You do not have permission to manage consents.')
@@ -371,7 +373,7 @@ async function fetchConsents(page = 1) {
 async function fetchAssets() {
   try {
     const { data } = await api.get('/assets', { params: { per_page: 200 } })
-    assets.value = data.data ?? data
+    assets.value = data.data?.data ?? data.data ?? []
   } catch {
     // Non-critical — asset dropdown falls back to empty list
   }

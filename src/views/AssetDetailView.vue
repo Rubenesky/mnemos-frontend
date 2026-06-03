@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
-    <div v-if="loading" class="text-center py-20 text-gray-400">Loading...</div>
+    <div v-if="loading" class="text-center py-20 text-gray-400">{{ t('common.loading') }}</div>
 
-    <div v-else-if="!asset" class="text-center py-20 text-gray-400">Asset not found.</div>
+    <div v-else-if="!asset" class="text-center py-20 text-gray-400">{{ t('detail.notFound') }}</div>
 
     <div v-else class="space-y-6">
       <!-- Header -->
@@ -15,17 +15,17 @@
             :to="`/assets/${asset.id}/edit`"
             class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
           >
-            Edit
+            {{ t('common.edit') }}
           </RouterLink>
           <button
             v-if="auth.isAdmin"
             @click="handleDelete"
             class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
           >
-            Delete
+            {{ t('common.delete') }}
           </button>
           <RouterLink to="/assets" class="text-gray-500 dark:text-gray-400 hover:underline text-sm">
-            ← Back
+            {{ t('detail.back') }}
           </RouterLink>
         </div>
       </div>
@@ -49,53 +49,53 @@
       <!-- Information and Metadata -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-          <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-4">Information</h2>
+          <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-4">{{ t('detail.information') }}</h2>
           <dl class="space-y-3 text-sm">
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Original name</dt>
+              <dt class="text-gray-500 dark:text-gray-400">{{ t('detail.originalName') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200 font-medium">
                 {{ asset.original_name }}
               </dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Type</dt>
+              <dt class="text-gray-500 dark:text-gray-400">{{ t('detail.type') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ asset.mime_type }}</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Size</dt>
+              <dt class="text-gray-500 dark:text-gray-400">{{ t('detail.size') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ asset.size_kb }} KB</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Uploaded by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">{{ t('detail.uploadedBy') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ asset.uploaded_by }}</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
+              <dt class="text-gray-500 dark:text-gray-400">{{ t('detail.status') }}</dt>
               <dd>
                 <span
                   v-if="asset.status === 'processed'"
                   class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
                 >
-                  Processed
+                  {{ t('assets.status.processed') }}
                 </span>
                 <span v-else class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                  Pending
+                  {{ t('assets.status.pending') }}
                 </span>
               </dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500 dark:text-gray-400">Date</dt>
+              <dt class="text-gray-500 dark:text-gray-400">{{ t('detail.date') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200">{{ formatDate(asset.created_at) }}</dd>
             </div>
             <div v-if="asset.mime_type.startsWith('image/')" class="flex justify-between items-start gap-4">
-              <dt class="text-gray-500 dark:text-gray-400 shrink-0">Alt-text</dt>
+              <dt class="text-gray-500 dark:text-gray-400 shrink-0">{{ t('detail.altText') }}</dt>
               <dd class="text-right text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <span v-if="asset.alt_text">{{ asset.alt_text }}</span>
-                <span v-else class="text-gray-400 dark:text-gray-500 italic">Not generated yet</span>
+                <span v-else class="text-gray-400 dark:text-gray-500 italic">{{ t('detail.notGeneratedYet') }}</span>
                 <span
                   v-if="asset.alt_text"
                   class="ai-badge"
-                >AI generated</span>
+                >{{ t('detail.aiGenerated') }}</span>
               </dd>
             </div>
           </dl>
@@ -104,7 +104,7 @@
         <!-- AI Metadata -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6" v-if="asset.metadata">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-200">Metadata</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-200">{{ t('detail.metadata') }}</h2>
             <span
               v-if="asset.metadata.ai_generated"
               class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full"
@@ -114,19 +114,19 @@
           </div>
           <dl class="space-y-3 text-sm">
             <div>
-              <dt class="text-gray-500 dark:text-gray-400 mb-1">Title</dt>
+              <dt class="text-gray-500 dark:text-gray-400 mb-1">{{ t('detail.title') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200 font-medium">
                 {{ asset.metadata.title ?? '—' }}
               </dd>
             </div>
             <div>
-              <dt class="text-gray-500 dark:text-gray-400 mb-1">Description</dt>
+              <dt class="text-gray-500 dark:text-gray-400 mb-1">{{ t('detail.description') }}</dt>
               <dd class="text-gray-800 dark:text-gray-200">
                 {{ asset.metadata.description ?? '—' }}
               </dd>
             </div>
             <div v-if="asset.metadata.tags?.length">
-              <dt class="text-gray-500 dark:text-gray-400 mb-2">Tags</dt>
+              <dt class="text-gray-500 dark:text-gray-400 mb-2">{{ t('detail.tags') }}</dt>
               <dd class="flex flex-wrap gap-2">
                 <span
                   v-for="tag in asset.metadata.tags"
@@ -147,19 +147,19 @@
         class="bg-white dark:bg-gray-800 rounded-xl shadow p-6"
       >
         <div class="flex justify-between items-center mb-4">
-          <h2 class="font-semibold text-gray-800 dark:text-gray-200">Consent Status</h2>
+          <h2 class="font-semibold text-gray-800 dark:text-gray-200">{{ t('detail.consentStatus') }}</h2>
           <RouterLink
             :to="`/consents?asset_id=${asset.id}`"
             class="text-sm text-amber-600 hover:underline font-medium"
           >
-            Manage consents &rarr;
+            {{ t('detail.manageConsents') }}
           </RouterLink>
         </div>
 
-        <div v-if="consentsLoading" class="text-sm text-gray-400">Loading consents...</div>
+        <div v-if="consentsLoading" class="text-sm text-gray-400">{{ t('detail.loadingConsents') }}</div>
 
         <div v-else-if="assetConsents.length === 0" class="text-sm text-gray-400">
-          No consent records for this asset.
+          {{ t('detail.noConsents') }}
         </div>
 
         <ul v-else class="space-y-2">
@@ -178,9 +178,9 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div class="flex justify-between items-center mb-4">
           <div>
-            <h2 class="font-semibold text-gray-800 dark:text-gray-200">🧠 AI Suggestions</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-200">{{ t('detail.aiSuggestions') }}</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              AI can suggest alternative titles, improved descriptions and additional tags.
+              {{ t('detail.aiSuggestionsDesc') }}
             </p>
           </div>
           <button
@@ -188,7 +188,7 @@
             :disabled="variantsLoading"
             class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 text-sm font-medium"
           >
-            {{ variantsLoading ? 'Generating...' : '✨ Generate suggestions' }}
+            {{ variantsLoading ? t('detail.generating') : t('detail.generateBtn') }}
           </button>
         </div>
 
@@ -197,7 +197,7 @@
           <!-- Alternative titles -->
           <div v-if="variants.titles?.length">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Alternative titles
+              {{ t('detail.alternativeTitles') }}
             </h3>
             <div class="space-y-2">
               <div
@@ -210,7 +210,7 @@
                   @click="applyVariant('title', title)"
                   class="text-xs text-blue-600 hover:underline ml-2 shrink-0"
                 >
-                  Use this
+                  {{ t('detail.useThis') }}
                 </button>
               </div>
             </div>
@@ -219,7 +219,7 @@
           <!-- Improved descriptions -->
           <div v-if="variants.descriptions?.length">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Improved descriptions
+              {{ t('detail.improvedDescriptions') }}
             </h3>
             <div class="space-y-2">
               <div
@@ -232,7 +232,7 @@
                   @click="applyVariant('description', desc)"
                   class="text-xs text-blue-600 hover:underline ml-2 shrink-0"
                 >
-                  Use this
+                  {{ t('detail.useThis') }}
                 </button>
               </div>
             </div>
@@ -241,7 +241,7 @@
           <!-- Additional tags -->
           <div v-if="variants.additional_tags?.length">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Suggested additional tags
+              {{ t('detail.suggestedTags') }}
             </h3>
             <div class="flex flex-wrap gap-2">
               <button
@@ -254,7 +254,7 @@
               </button>
             </div>
             <p class="text-xs text-gray-400 mt-2">
-              Click a tag to add it to the metadata
+              {{ t('detail.clickTagHint') }}
             </p>
           </div>
         </div>
@@ -266,12 +266,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import ConsentBadge from '../components/ConsentBadge.vue'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -294,7 +296,7 @@ function formatDate(dateString) {
 }
 
 async function handleDelete() {
-  if (!confirm('Are you sure you want to delete this asset?')) return
+  if (!confirm(t('detail.deleteConfirm'))) return
 
   try {
     await api.delete(`/assets/${route.params.id}`)
@@ -366,7 +368,7 @@ async function fetchAssetConsents(assetId) {
   consentsLoading.value = true
   try {
     const { data } = await api.get('/consents', { params: { asset_id: assetId } })
-    assetConsents.value = data.data ?? data
+    assetConsents.value = data.data?.data ?? data.data ?? []
   } catch {
     // Non-critical — section is simply empty on error
   } finally {

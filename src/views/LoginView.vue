@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="login-header">
         <MnemosLogo />
-        <p class="login-tagline">Open memory for organizations that matter</p>
+        <p class="login-tagline">{{ t('onboarding.tagline') }}</p>
       </div>
 
       <!-- Form -->

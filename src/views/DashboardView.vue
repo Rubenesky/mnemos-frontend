@@ -1,30 +1,30 @@
 <template>
   <AppLayout>
     <div class="space-y-6">
-      <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+      <h1 class="text-2xl font-bold text-gray-800">{{ t('dashboard.title') }}</h1>
 
       <!-- Stats cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="bg-white rounded-xl shadow p-6">
-          <p class="text-sm text-gray-500">Total assets</p>
+          <p class="text-sm text-gray-500">{{ t('dashboard.totalAssets') }}</p>
           <p class="text-4xl font-bold text-gray-800 mt-1">{{ stats.total }}</p>
         </div>
         <div class="bg-white rounded-xl shadow p-6">
-          <p class="text-sm text-gray-500">Processed</p>
+          <p class="text-sm text-gray-500">{{ t('dashboard.processed') }}</p>
           <p class="text-4xl font-bold text-green-600 mt-1">{{ stats.processed }}</p>
         </div>
         <div class="bg-white rounded-xl shadow p-6">
-          <p class="text-sm text-gray-500">Pending</p>
+          <p class="text-sm text-gray-500">{{ t('dashboard.pending') }}</p>
           <p class="text-4xl font-bold text-yellow-500 mt-1">{{ stats.pending }}</p>
         </div>
       </div>
 
       <!-- Recent assets -->
       <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="font-semibold text-gray-800 mb-4">Recent assets</h2>
-        <div v-if="loading" class="text-gray-400 text-sm">Loading…</div>
+        <h2 class="font-semibold text-gray-800 mb-4">{{ t('dashboard.recentAssets') }}</h2>
+        <div v-if="loading" class="text-gray-400 text-sm">{{ t('dashboard.loading') }}</div>
         <div v-else-if="recentAssets.length === 0" class="text-gray-400 text-sm">
-          No assets yet.
+          {{ t('dashboard.noAssets') }}
         </div>
         <ul v-else class="divide-y divide-gray-100">
           <li
@@ -48,8 +48,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import api from '../api/axios'
+
+const { t } = useI18n()
 
 const loading = ref(true)
 const recentAssets = ref([])

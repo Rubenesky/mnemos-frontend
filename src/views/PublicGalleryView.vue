@@ -4,7 +4,7 @@
     <header class="gallery-header">
       <div class="gallery-header-inner">
         <MnemosLogo />
-        <p class="gallery-tagline">Open memory for organizations that matter</p>
+        <p class="gallery-tagline">{{ t('gallery.tagline') }}</p>
         <p class="gallery-subtitle">
           Discover the digital archive of
           <span class="gallery-org-name">{{ orgName }}</span>
@@ -37,8 +37,8 @@
       <!-- Empty state -->
       <div v-else-if="collections.length === 0" class="gallery-empty">
         <MnemosLogo />
-        <p class="gallery-empty-title">No public collections yet</p>
-        <p class="gallery-empty-sub">Check back soon — this archive will be published shortly.</p>
+        <p class="gallery-empty-title">{{ t('gallery.noCollections') }}</p>
+        <p class="gallery-empty-sub">{{ t('gallery.noCollectionsSub') }}</p>
       </div>
 
       <template v-else>
@@ -74,7 +74,7 @@
 
         <!-- Asset grid: empty collection -->
         <div v-else-if="assets.length === 0" class="assets-empty">
-          <p>No assets in this collection yet.</p>
+          <p>{{ t('gallery.noAssets') }}</p>
         </div>
 
         <!-- Asset grid: cards -->
@@ -148,7 +148,7 @@
               <span v-for="tag in getTags(activeAsset)" :key="tag" class="asset-tag">{{ tag }}</span>
             </div>
             <p v-if="activeAsset.created_at" class="modal-meta">
-              Added {{ formatDate(activeAsset.created_at) }}
+              {{ t('gallery.addedOn') }} {{ formatDate(activeAsset.created_at) }}
             </p>
           </div>
         </template>
@@ -157,7 +157,7 @@
 
     <!-- Footer -->
     <footer class="gallery-footer">
-      <p class="footer-tagline">Open memory for organizations that matter</p>
+      <p class="footer-tagline">{{ t('gallery.tagline') }}</p>
       <a
         href="https://github.com/rubenesky/mnemos-frontend"
         target="_blank"
@@ -173,8 +173,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { useI18n } from 'vue-i18n'
 import MnemosLogo from '@/components/MnemosLogo.vue'
 import { useToastStore } from '@/stores/toast'
+const { t } = useI18n()
 const toast = useToastStore()
 
 // Public axios instance — no auth token attached

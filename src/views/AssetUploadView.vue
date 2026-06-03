@@ -2,9 +2,9 @@
   <AppLayout>
     <div class="space-y-6">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Upload asset</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ t('upload.title') }}</h1>
         <RouterLink to="/assets" class="text-gray-500 dark:text-gray-400 hover:underline text-sm">
-          ← Back
+          {{ t('upload.back') }}
         </RouterLink>
       </div>
 
@@ -13,7 +13,7 @@
           <!-- Upload zone -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              File
+              {{ t('upload.fileLabel') }}
             </label>
 
             <!-- Preview if image -->
@@ -41,9 +41,9 @@
               @drop.prevent="handleDrop"
             >
               <p class="text-gray-400 text-sm">
-                Drag a file here or click to select
+                {{ t('upload.dragDrop') }}
               </p>
-              <p class="text-gray-300 text-xs mt-1">Maximum 10MB</p>
+              <p class="text-gray-300 text-xs mt-1">{{ t('upload.maxSize') }}</p>
             </div>
 
             <!-- Selected file info (non-image) -->
@@ -74,12 +74,12 @@
             v-if="selectedFile && preview"
             class="mb-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-300"
           >
-            <p><span class="font-medium">Name:</span> {{ selectedFile.name }}</p>
+            <p><span class="font-medium">{{ t('upload.nameLabel') }}</span> {{ selectedFile.name }}</p>
             <p>
-              <span class="font-medium">Size:</span>
+              <span class="font-medium">{{ t('upload.sizeLabel') }}</span>
               {{ (selectedFile.size / 1024).toFixed(1) }} KB
             </p>
-            <p><span class="font-medium">Type:</span> {{ selectedFile.type }}</p>
+            <p><span class="font-medium">{{ t('upload.typeLabel') }}</span> {{ selectedFile.type }}</p>
           </div>
 
           <!-- AI processing status -->
@@ -97,14 +97,14 @@
               to="/assets"
               class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:underline text-sm"
             >
-              Cancel
+              {{ t('upload.cancel') }}
             </RouterLink>
             <button
               type="submit"
               :disabled="!selectedFile || loading || !!pollingMessage"
               class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
             >
-              {{ loading ? 'Uploading...' : 'Upload asset' }}
+              {{ loading ? t('upload.uploading') : t('upload.uploadBtn') }}
             </button>
           </div>
         </form>
@@ -116,10 +116,12 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
 
+const { t } = useI18n()
 let activeInterval = null
 
 const router = useRouter()
@@ -194,7 +196,7 @@ async function handleUpload() {
     const assetId = response.data.data.id
     clearFile()
     loading.value = false
-    pollingMessage.value = 'AI is analyzing your file...'
+    pollingMessage.value = t('upload.aiAnalyzing')
 
     await pollStatus(assetId)
 

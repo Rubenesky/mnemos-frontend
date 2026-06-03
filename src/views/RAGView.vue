@@ -2,9 +2,9 @@
   <AppLayout>
     <div class="space-y-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">🧠 Chat with your data</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ t('rag.title') }}</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Ask the AI anything about the assets and users on the platform.
+          {{ t('rag.subtitle') }}
         </p>
       </div>
 
@@ -12,7 +12,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 min-h-96 space-y-4">
         <div v-if="messages.length === 0" class="text-center py-16 text-gray-400">
           <p class="text-4xl mb-3">🤖</p>
-          <p class="text-sm">Ask a question about your data</p>
+          <p class="text-sm">{{ t('rag.askQuestion') }}</p>
           <div class="mt-4 space-y-2">
             <button
               v-for="example in examples"
@@ -50,7 +50,7 @@
           <div
             class="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl rounded-tl-none text-sm text-gray-400"
           >
-            Querying data...
+            {{ t('rag.querying') }}
           </div>
         </div>
       </div>
@@ -60,7 +60,7 @@
         <input
           v-model="question"
           type="text"
-          placeholder="How many assets did I upload this week?"
+          :placeholder="t('rag.placeholder')"
           class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleQuery"
         />
@@ -69,7 +69,7 @@
           :disabled="loading || !question"
           class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
         >
-          Ask
+          {{ t('rag.askBtn') }}
         </button>
       </div>
     </div>
@@ -77,23 +77,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
 
+const { t } = useI18n()
 const toast = useToastStore()
 const question = ref('')
 const loading = ref(false)
 const messages = ref([])
 
-const examples = [
-  'How many assets do I have uploaded on the platform?',
-  'What assets did I upload this week?',
-  'How many users are there and what roles do they have?',
-  'What is the total storage used?',
-  'Who is the most active user?',
-]
+const examples = computed(() => [
+  t('rag.example1'),
+  t('rag.example2'),
+  t('rag.example3'),
+  t('rag.example4'),
+  t('rag.example5'),
+])
 
 async function handleQuery() {
   if (!question.value || loading.value) return

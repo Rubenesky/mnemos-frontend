@@ -2,23 +2,23 @@
   <AppLayout>
     <div class="space-y-6">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Edit asset</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ t('edit.title') }}</h1>
         <RouterLink
           :to="`/assets/${route.params.id}`"
           class="text-gray-500 dark:text-gray-400 hover:underline text-sm"
         >
-          ← Back
+          {{ t('edit.back') }}
         </RouterLink>
       </div>
 
-      <div v-if="loading" class="text-center py-20 text-gray-400">Loading...</div>
+      <div v-if="loading" class="text-center py-20 text-gray-400">{{ t('common.loading') }}</div>
 
       <div v-else class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 max-w-2xl">
         <form @submit.prevent="handleUpdate">
           <!-- Title -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Title
+              {{ t('edit.titleLabel') }}
             </label>
             <input
               v-model="form.title"
@@ -30,7 +30,7 @@
           <!-- Description -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
+              {{ t('edit.descriptionLabel') }}
             </label>
             <textarea
               v-model="form.description"
@@ -42,7 +42,7 @@
           <!-- Tags -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tags <span class="text-gray-400 font-normal">(comma-separated)</span>
+              {{ t('edit.tagsLabel') }} <span class="text-gray-400 font-normal">{{ t('edit.tagsHint') }}</span>
             </label>
             <input
               v-model="form.tags"
@@ -58,7 +58,7 @@
               for="alt_text"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Alt-text <span class="text-gray-400 font-normal">(accessibility description)</span>
+              {{ t('edit.altTextLabel') }} <span class="text-gray-400 font-normal">{{ t('edit.altTextHint') }}</span>
             </label>
             <textarea
               id="alt_text"
@@ -69,7 +69,7 @@
               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></textarea>
             <p class="mt-1 text-xs text-gray-400">
-              Used by screen readers. Auto-generated for images — you can edit it.
+              {{ t('edit.altTextNote') }}
             </p>
           </div>
 
@@ -82,11 +82,11 @@
                 class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Publish to public gallery
+                {{ t('edit.publishLabel') }}
               </span>
             </label>
             <p class="mt-1 text-xs text-gray-400">
-              Published assets are visible to anyone visiting the public gallery.
+              {{ t('edit.publishNote') }}
             </p>
           </div>
 
@@ -94,7 +94,7 @@
           <div
             class="mb-6 p-3 bg-purple-50 dark:bg-purple-900 rounded-lg text-sm text-purple-700 dark:text-purple-300"
           >
-            ✨ The current metadata was AI-generated. Saving will mark it as manually edited.
+            {{ t('edit.aiNotice') }}
           </div>
 
           <!-- Buttons -->
@@ -103,14 +103,14 @@
               :to="`/assets/${route.params.id}`"
               class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:underline text-sm"
             >
-              Cancel
+              {{ t('edit.cancel') }}
             </RouterLink>
             <button
               type="submit"
               :disabled="saving"
               class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
             >
-              {{ saving ? 'Saving...' : 'Save changes' }}
+              {{ saving ? t('edit.saving') : t('edit.saveBtn') }}
             </button>
           </div>
         </form>
@@ -122,11 +122,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()

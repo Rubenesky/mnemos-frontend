@@ -2,23 +2,23 @@
   <AppLayout>
     <div class="space-y-6">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Assets</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ t('assets.title') }}</h1>
         <RouterLink
           to="/assets/upload"
           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
         >
-          + Upload asset
+          + {{ t('assets.upload') }}
         </RouterLink>
       </div>
 
       <!-- Natural language search -->
       <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4">
-        <p class="text-white text-sm font-medium mb-2">🧠 AI-powered smart search</p>
+        <p class="text-white text-sm font-medium mb-2">🧠 {{ t('assets.aiSearch') }}</p>
         <div class="flex gap-2">
           <input
             v-model="nlQuery"
             type="text"
-            placeholder="E.g. show me landscape images uploaded this week..."
+            :placeholder="t('assets.aiSearchPlaceholder')"
             class="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-white"
             @keyup.enter="handleNLSearch"
           />
@@ -27,7 +27,7 @@
             :disabled="nlLoading || !nlQuery"
             class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 disabled:opacity-50"
           >
-            {{ nlLoading ? '...' : 'Search' }}
+            {{ nlLoading ? '...' : t('assets.searchBtn') }}
           </button>
         </div>
         <div v-if="nlFilters" class="mt-2 text-xs text-blue-100">
@@ -39,7 +39,7 @@
           >
             {{ key }}: {{ value }}
           </span>
-          <button @click="clearNLSearch" class="ml-2 underline">clear</button>
+          <button @click="clearNLSearch" class="ml-2 underline">{{ t('assets.clear') }}</button>
         </div>
       </div>
 
@@ -49,36 +49,36 @@
           <input
             v-model="search"
             type="text"
-            placeholder="Search by name..."
+            :placeholder="t('assets.search')"
             class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <select
             v-model="filterType"
             class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All types</option>
-            <option value="image">Images</option>
-            <option value="application/pdf">PDFs</option>
+            <option value="">{{ t('assets.allTypes') }}</option>
+            <option value="image">{{ t('assets.images') }}</option>
+            <option value="application/pdf">{{ t('assets.pdfs') }}</option>
           </select>
           <select
             v-model="filterStatus"
             class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All statuses</option>
-            <option value="processed">Processed</option>
-            <option value="pending">Pending</option>
+            <option value="">{{ t('assets.allStatuses') }}</option>
+            <option value="processed">{{ t('assets.status.processed') }}</option>
+            <option value="pending">{{ t('assets.status.pending') }}</option>
           </select>
         </div>
       </div>
 
       <!-- Asset list -->
-      <div v-if="loading" class="text-center py-20 text-gray-400">Loading assets...</div>
+      <div v-if="loading" class="text-center py-20 text-gray-400">{{ t('assets.loading') }}</div>
 
       <div
         v-else-if="displayedAssets.length === 0"
         class="text-center py-20 text-gray-400 dark:text-gray-500"
       >
-        No assets found.
+        {{ t('assets.noResults') }}
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -113,13 +113,13 @@
             v-if="asset.status === 'processed'"
             class="inline-block mt-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
           >
-            Processed
+            {{ t('assets.status.processed') }}
           </span>
           <span
             v-else
             class="inline-block mt-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
           >
-            Pending
+            {{ t('assets.status.pending') }}
           </span>
         </RouterLink>
       </div>
@@ -131,7 +131,7 @@
           :disabled="meta.current_page === 1"
           class="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          ← Previous
+          {{ t('assets.prevPage') }}
         </button>
 
         <button
@@ -153,12 +153,12 @@
           :disabled="meta.current_page === meta.last_page"
           class="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Next →
+          {{ t('assets.nextPage') }}
         </button>
       </div>
 
       <p class="text-center text-sm text-gray-400">
-        {{ displayedAssets.length }} asset(s) {{ nlFilters ? 'found by AI' : 'total' }}
+        {{ displayedAssets.length }} {{ nlFilters ? t('assets.foundByAI') : t('assets.total') }}
       </p>
     </div>
   </AppLayout>
@@ -166,10 +166,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
 
+const { t } = useI18n()
 const toast = useToastStore()
 const loading = ref(true)
 const assets = ref([])
