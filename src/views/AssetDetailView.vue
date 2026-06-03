@@ -10,7 +10,18 @@
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
           {{ asset.metadata?.title ?? asset.original_name }}
         </h1>
-        <div class="flex gap-3">
+        <div class="flex gap-3 items-center">
+          <button
+            v-if="!auth.isVolunteer"
+            @click="togglePublic"
+            :disabled="publishLoading"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            :class="asset.is_public
+              ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'"
+          >
+            {{ asset.is_public ? '🌐 ' + t('detail.public') : '🔒 ' + t('detail.private') }}
+          </button>
           <RouterLink
             :to="`/assets/${asset.id}/edit`"
             class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
@@ -284,6 +295,7 @@ const variants = ref(null)
 const variantsLoading = ref(false)
 const assetConsents = ref([])
 const consentsLoading = ref(false)
+const publishLoading = ref(false)
 
 function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-GB', {
@@ -293,6 +305,20 @@ function formatDate(dateString) {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+async function togglePublic() {
+  publishLoading.value = true
+  try {
+    const newValue = !asset.value.is_public
+    await api.patch(`/assets/${route.params.id}`, { is_public: newValue })
+    asset.value.is_public = newValue
+    toast.success(newValue ? t('detail.madePublic') : t('detail.madePrivate'))
+  } catch {
+    toast.error(t('detail.publishError'))
+  } finally {
+    publishLoading.value = false
+  }
 }
 
 async function handleDelete() {

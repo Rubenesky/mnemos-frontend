@@ -2,11 +2,14 @@
   <div class="gallery-page">
     <!-- Header -->
     <header class="gallery-header">
-      <div class="gallery-header-inner">
+      <div class="gallery-header-top">
         <MnemosLogo />
+        <RouterLink to="/login" class="gallery-login-btn">{{ t('auth.login') }}</RouterLink>
+      </div>
+      <div class="gallery-header-inner">
         <p class="gallery-tagline">{{ t('gallery.tagline') }}</p>
         <p class="gallery-subtitle">
-          Discover the digital archive of
+          {{ t('gallery.discoverArchive') }}
           <span class="gallery-org-name">{{ orgName }}</span>
         </p>
       </div>
@@ -322,9 +325,31 @@ function formatDate(dateStr) {
 
 /* ── Header ── */
 .gallery-header {
-  padding: 3rem 1.5rem 2rem;
-  text-align: center;
+  padding: 1.5rem 1.5rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gallery-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+}
+
+.gallery-login-btn {
+  background: var(--color-gold, #f59e0b);
+  color: var(--color-navy, #0f172a);
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.gallery-login-btn:hover {
+  opacity: 0.85;
 }
 
 .gallery-header-inner {
@@ -334,6 +359,7 @@ function formatDate(dateStr) {
   gap: 0.75rem;
   max-width: 700px;
   margin: 0 auto;
+  text-align: center;
 }
 
 .gallery-tagline {

@@ -169,7 +169,8 @@ const messages = {
       loadingConsents: 'Loading consents...',
       noConsents: 'No consent records for this asset.',
       aiSuggestions: '🧠 AI Suggestions',
-      aiSuggestionsDesc: 'AI can suggest alternative titles, improved descriptions and additional tags.',
+      aiSuggestionsDesc:
+        'AI can suggest alternative titles, improved descriptions and additional tags.',
       generating: 'Generating...',
       generateBtn: '✨ Generate suggestions',
       alternativeTitles: 'Alternative titles',
@@ -178,6 +179,11 @@ const messages = {
       suggestedTags: 'Suggested additional tags',
       clickTagHint: 'Click a tag to add it to the metadata',
       deleteConfirm: 'Are you sure you want to delete this asset?',
+      public: 'Public',
+      private: 'Private',
+      madePublic: 'Asset published to public gallery.',
+      madePrivate: 'Asset removed from public gallery.',
+      publishError: 'Could not update visibility. Please try again.',
     },
     edit: {
       title: 'Edit asset',
@@ -203,6 +209,7 @@ const messages = {
       noAssets: 'No assets in this collection yet.',
       addedOn: 'Added',
       signIn: 'Sign in',
+      discoverArchive: 'Discover the digital archive of',
     },
     rag: {
       title: '🧠 Chat with your data',
@@ -392,7 +399,8 @@ const messages = {
       loadingConsents: 'Cargando consentimientos...',
       noConsents: 'No hay registros de consentimiento para este recurso.',
       aiSuggestions: '🧠 Sugerencias IA',
-      aiSuggestionsDesc: 'La IA puede sugerir títulos alternativos, descripciones mejoradas y etiquetas adicionales.',
+      aiSuggestionsDesc:
+        'La IA puede sugerir títulos alternativos, descripciones mejoradas y etiquetas adicionales.',
       generating: 'Generando...',
       generateBtn: '✨ Generar sugerencias',
       alternativeTitles: 'Títulos alternativos',
@@ -401,6 +409,11 @@ const messages = {
       suggestedTags: 'Etiquetas adicionales sugeridas',
       clickTagHint: 'Haz clic en una etiqueta para añadirla',
       deleteConfirm: '¿Estás seguro de que quieres eliminar este recurso?',
+      public: 'Público',
+      private: 'Privado',
+      madePublic: 'Recurso publicado en la galería pública.',
+      madePrivate: 'Recurso retirado de la galería pública.',
+      publishError: 'No se pudo actualizar la visibilidad. Inténtalo de nuevo.',
     },
     edit: {
       title: 'Editar recurso',
@@ -411,10 +424,13 @@ const messages = {
       tagsHint: '(separadas por comas)',
       altTextLabel: 'Texto alternativo',
       altTextHint: '(descripción de accesibilidad)',
-      altTextNote: 'Usado por lectores de pantalla. Generado automáticamente para imágenes — puedes editarlo.',
+      altTextNote:
+        'Usado por lectores de pantalla. Generado automáticamente para imágenes — puedes editarlo.',
       publishLabel: 'Publicar en galería pública',
-      publishNote: 'Los recursos publicados son visibles para cualquiera que visite la galería pública.',
-      aiNotice: '✨ Los metadatos actuales fueron generados por IA. Al guardar se marcarán como editados manualmente.',
+      publishNote:
+        'Los recursos publicados son visibles para cualquiera que visite la galería pública.',
+      aiNotice:
+        '✨ Los metadatos actuales fueron generados por IA. Al guardar se marcarán como editados manualmente.',
       saving: 'Guardando...',
       saveBtn: 'Guardar cambios',
       cancel: 'Cancelar',
@@ -426,6 +442,7 @@ const messages = {
       noAssets: 'No hay recursos en esta colección todavía.',
       addedOn: 'Añadido el',
       signIn: 'Iniciar sesión',
+      discoverArchive: 'Descubre el archivo digital de',
     },
     rag: {
       title: '🧠 Chat con tus datos',
