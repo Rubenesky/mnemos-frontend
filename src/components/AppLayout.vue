@@ -183,7 +183,7 @@ const menuOpen = ref(false)
 async function handleLogout() {
   await auth.logout()
   toast.success('Signed out successfully')
-  router.push({ name: 'login' })
+  router.push({ name: 'public-gallery' })
 }
 </script>
 

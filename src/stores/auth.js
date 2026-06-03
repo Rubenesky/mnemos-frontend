@@ -33,10 +33,11 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   /** @type {import('vue').ComputedRef<boolean>} True when the user is a volunteer whose expires_at is in the past. */
-  const isExpired = computed(() =>
-    user.value?.role === 'volunteer' &&
-    user.value?.expires_at != null &&
-    new Date(user.value.expires_at) < new Date()
+  const isExpired = computed(
+    () =>
+      user.value?.role === 'volunteer' &&
+      user.value?.expires_at != null &&
+      new Date(user.value.expires_at) < new Date(),
   )
 
   /**
