@@ -1,21 +1,21 @@
 <template>
-  <AppLayout>
-    <!-- Page header -->
-    <div class="cp-header">
-      <div>
-        <h1 class="cp-title">{{ t('consent.title') }}</h1>
-        <p class="cp-subtitle">{{ t('consent.subtitle') }}</p>
-      </div>
-      <div class="cp-header-actions">
-        <button class="btn-secondary" @click="exportCsv" :disabled="exportLoading">
-          {{ exportLoading ? t('consent.exporting') : t('consent.exportCsv') }}
-        </button>
-        <button class="btn-primary" @click="openAddModal">{{ t('consent.add') }}</button>
-      </div>
-    </div>
+  <AppLayout :title="t('consent.title')">
+    <template #actions>
+      <input
+        v-model="searchQuery"
+        type="search"
+        class="search-input"
+        :placeholder="t('consent.searchPlaceholder')"
+        @input="onSearchInput"
+      />
+      <button class="btn-secondary" @click="exportCsv" :disabled="exportLoading">
+        {{ exportLoading ? t('consent.exporting') : t('consent.exportCsv') }}
+      </button>
+      <button class="btn-primary" @click="openAddModal">{{ t('consent.add') }}</button>
+    </template>
 
-    <!-- Filter bar -->
-    <div class="cp-filters">
+    <!-- Filter pills row -->
+    <div class="filter-pills-row">
       <div class="filter-pills" role="group" aria-label="Filter by status">
         <button
           v-for="opt in statusOptions"
@@ -27,28 +27,21 @@
           {{ opt.label }}
         </button>
       </div>
-      <input
-        v-model="searchQuery"
-        type="search"
-        class="cp-search"
-        :placeholder="t('consent.searchPlaceholder')"
-        @input="onSearchInput"
-      />
     </div>
 
-    <!-- Consent table card -->
-    <div class="cp-table-card">
+    <!-- Main table card -->
+    <div class="table-card">
       <!-- Loading -->
-      <div v-if="loading" class="cp-loading">{{ t('consent.loading') }}</div>
+      <div v-if="loading" class="state-message">{{ t('consent.loading') }}</div>
 
       <!-- Empty -->
-      <div v-else-if="consents.length === 0" class="cp-empty">
+      <div v-else-if="consents.length === 0" class="state-message">
         {{ t('consent.noRecords') }}
       </div>
 
       <!-- Table -->
-      <div v-else class="cp-table-wrapper">
-        <table class="cp-table">
+      <div v-else class="table-wrapper">
+        <table class="data-table">
           <thead>
             <tr>
               <th>{{ t('consent.table.asset') }}</th>
@@ -76,7 +69,7 @@
                     </div>
                   </div>
                   <span class="asset-name">
-                    {{ consent.asset?.original_name ?? '—' }}
+                    {{ consent.asset?.metadata?.title ?? consent.asset?.original_name ?? '—' }}
                     <span
                       v-if="consent.status === 'pending'"
                       class="warning-icon"
@@ -85,21 +78,40 @@
                   </span>
                 </div>
               </td>
-              <td>{{ consent.person_name }}</td>
+              <td class="td-person">{{ consent.person_name }}</td>
               <td class="td-date">{{ formatDate(consent.consent_date) }}</td>
-              <td class="td-type">{{ capitalize(consent.type) }}</td>
+              <td class="td-type">
+                <span class="type-badge">{{ t(`asset_type.${consent.consent_type}`) }}</span>
+              </td>
               <td>
-                <ConsentBadge :status="consent.status" />
+                <span
+                  class="status-badge"
+                  :class="`status-badge--${consent.status}`"
+                >
+                  {{ t(`consent.status.${consent.status}`) }}
+                </span>
               </td>
               <td class="td-actions">
+                <button
+                  v-if="consent.status === 'pending'"
+                  class="action-btn action-btn--send"
+                  :disabled="linkLoading === consent.id"
+                  @click="sendRequest(consent)"
+                  title="Enviar solicitud de consentimiento"
+                  aria-label="Enviar solicitud"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
                 <button
                   class="action-btn action-btn--edit"
                   @click="openEditModal(consent)"
                   title="Edit"
                   aria-label="Edit consent"
                 >
-                  <!-- Pencil icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   </svg>
@@ -110,8 +122,7 @@
                   title="Delete"
                   aria-label="Delete consent"
                 >
-                  <!-- Trash icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                     <path d="M10 11v6"/><path d="M14 11v6"/>
@@ -125,7 +136,7 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="pagination && pagination.last_page > 1" class="cp-pagination">
+      <div v-if="pagination && pagination.last_page > 1" class="pagination">
         <button
           class="btn-secondary"
           :disabled="pagination.current_page <= 1"
@@ -166,7 +177,7 @@
             <select id="c-asset" v-model="form.asset_id" class="form-input" required>
               <option value="" disabled>{{ t('consent.form.selectAsset') }}</option>
               <option v-for="a in assets" :key="a.id" :value="a.id">
-                {{ a.original_name }}
+                {{ a.metadata?.title ?? a.original_name }}
               </option>
             </select>
             <span v-if="formErrors.asset_id" class="form-error">{{ formErrors.asset_id }}</span>
@@ -186,6 +197,22 @@
             <span v-if="formErrors.person_name" class="form-error">{{ formErrors.person_name }}</span>
           </div>
 
+          <!-- Person email -->
+          <div class="form-field">
+            <label class="form-label" for="c-email">
+              {{ t('consent.form.personEmail') }} <span class="form-optional">{{ t('consent.form.notesOptional') }}</span>
+            </label>
+            <input
+              id="c-email"
+              v-model="form.person_email"
+              type="email"
+              class="form-input"
+              :placeholder="t('consent.form.personEmailHint')"
+            />
+            <span class="form-hint">{{ t('consent.form.personEmailHint') }}</span>
+            <span v-if="formErrors.person_email" class="form-error">{{ formErrors.person_email }}</span>
+          </div>
+
           <!-- Consent date -->
           <div class="form-field">
             <label class="form-label" for="c-date">{{ t('consent.form.consentDate') }}</label>
@@ -202,14 +229,14 @@
           <!-- Type -->
           <div class="form-field">
             <label class="form-label" for="c-type">{{ t('consent.form.type') }}</label>
-            <select id="c-type" v-model="form.type" class="form-input" required>
+            <select id="c-type" v-model="form.consent_type" class="form-input" required>
               <option value="" disabled>{{ t('consent.form.selectType') }}</option>
               <option value="photo">{{ t('consent.form.typePhoto') }}</option>
               <option value="video">{{ t('consent.form.typeVideo') }}</option>
               <option value="audio">{{ t('consent.form.typeAudio') }}</option>
               <option value="general">{{ t('consent.form.typeGeneral') }}</option>
             </select>
-            <span v-if="formErrors.type" class="form-error">{{ formErrors.type }}</span>
+            <span v-if="formErrors.consent_type" class="form-error">{{ formErrors.consent_type }}</span>
           </div>
 
           <!-- Status -->
@@ -286,15 +313,39 @@
         </div>
       </div>
     </div>
+    <!-- Send-request link modal -->
+    <div
+      v-if="showLinkModal"
+      class="modal-overlay"
+      @click.self="showLinkModal = false"
+      @keydown.escape.window="showLinkModal = false"
+    >
+      <div class="modal-card modal-card--sm" role="dialog" aria-modal="true" :aria-label="t('consent.linkModal.ariaLabel')">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ t('consent.linkModal.title') }}</h2>
+          <button class="modal-close" @click="showLinkModal = false" aria-label="Close">&times;</button>
+        </div>
+        <p class="link-modal-desc">
+          {{ t('consent.linkModal.description') }}<br>
+          <span class="link-modal-note">{{ t('consent.linkModal.expiry') }}</span>
+        </p>
+        <div class="link-copy-row">
+          <input class="link-input" readonly :value="linkUrl" @focus="$event.target.select()" />
+          <button class="btn-copy" @click="copyLink">{{ copied ? t('consent.linkModal.copied') : t('consent.linkModal.copy') }}</button>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" @click="showLinkModal = false">{{ t('consent.linkModal.close') }}</button>
+        </div>
+      </div>
+    </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/AppLayout.vue'
-import ConsentBadge from '@/components/ConsentBadge.vue'
 import api from '@/api/axios'
 import { useToastStore } from '@/stores/toast'
 
@@ -313,8 +364,12 @@ const deleteLoading = ref(false)
 
 const showFormModal = ref(false)
 const showDeleteModal = ref(false)
+const showLinkModal = ref(false)
 const editingConsent = ref(null)
 const deletingConsent = ref(null)
+const linkLoading = ref(null)
+const linkUrl = ref('')
+const copied = ref(false)
 
 const statusFilter = ref('')
 const searchQuery = ref('')
@@ -331,8 +386,9 @@ function emptyForm() {
   return {
     asset_id: '',
     person_name: '',
+    person_email: '',
     consent_date: '',
-    type: '',
+    consent_type: '',
     status: '',
     notes: '',
     document: null,
@@ -346,6 +402,7 @@ const formErrors = reactive({})
 onMounted(async () => {
   await Promise.all([fetchConsents(), fetchAssets()])
 })
+onUnmounted(() => clearTimeout(searchDebounce))
 
 // ── Data fetching ──────────────────────────────────────────────────────
 async function fetchConsents(page = 1) {
@@ -362,7 +419,7 @@ async function fetchConsents(page = 1) {
     pagination.value = data.data ?? null
   } catch (e) {
     if (e?.response?.status === 403) {
-      toast.error('You do not have permission to manage consents.')
+      toast.error(t('consent.permissionError'))
     }
     // Other statuses handled by the global axios interceptor
   } finally {
@@ -412,6 +469,31 @@ async function exportCsv() {
   }
 }
 
+// ── Send consent request ───────────────────────────────────────────────
+async function sendRequest(consent) {
+  linkLoading.value = consent.id
+  try {
+    const { data } = await api.post(`/consents/${consent.id}/send-request`)
+    linkUrl.value = data.data.url
+    copied.value = false
+    showLinkModal.value = true
+  } catch {
+    toast.error(t('consent.linkError'))
+  } finally {
+    linkLoading.value = null
+  }
+}
+
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(linkUrl.value)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // Clipboard not available — user can copy manually
+  }
+}
+
 // ── Add / Edit modal ───────────────────────────────────────────────────
 function openAddModal() {
   editingConsent.value = null
@@ -425,8 +507,9 @@ function openEditModal(consent) {
   Object.assign(form, {
     asset_id: consent.asset_id ?? consent.asset?.id ?? '',
     person_name: consent.person_name,
+    person_email: consent.person_email || '',
     consent_date: consent.consent_date ?? '',
-    type: consent.type,
+    consent_type: consent.consent_type,
     status: consent.status,
     notes: consent.notes ?? '',
     document: null,
@@ -456,8 +539,9 @@ async function saveConsent() {
     const payload = new FormData()
     payload.append('asset_id', form.asset_id)
     payload.append('person_name', form.person_name)
+    if (form.person_email) payload.append('person_email', form.person_email)
     payload.append('consent_date', form.consent_date)
-    payload.append('type', form.type)
+    payload.append('consent_type', form.consent_type)
     payload.append('status', form.status)
     if (form.notes) payload.append('notes', form.notes)
     if (form.document) payload.append('document', form.document)
@@ -468,19 +552,19 @@ async function saveConsent() {
       await api.post(`/consents/${editingConsent.value.id}`, payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      toast.success('Consent updated successfully.')
+      toast.success(t('consent.updateSuccess'))
     } else {
       await api.post('/consents', payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      toast.success('Consent record created.')
+      toast.success(t('consent.createSuccess'))
     }
 
     closeFormModal()
     await fetchConsents()
   } catch (e) {
     if (e?.response?.status === 403) {
-      toast.error('You do not have permission to manage consents.')
+      toast.error(t('consent.permissionError'))
     } else if (e?.response?.status === 422) {
       const errors = e.response.data?.errors ?? {}
       Object.assign(
@@ -510,12 +594,12 @@ async function confirmDelete() {
   deleteLoading.value = true
   try {
     await api.delete(`/consents/${deletingConsent.value.id}`)
-    toast.success('Consent record deleted.')
+    toast.success(t('consent.deleteSuccess'))
     closeDeleteModal()
     await fetchConsents()
   } catch (e) {
     if (e?.response?.status === 403) {
-      toast.error('You do not have permission to manage consents.')
+      toast.error(t('consent.permissionError'))
     }
   } finally {
     deleteLoading.value = false
@@ -536,174 +620,156 @@ function formatDate(dateStr) {
   }
 }
 
-function capitalize(str) {
-  if (!str) return '—'
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
 function isImage(asset) {
   return asset?.mime_type?.startsWith('image/')
 }
 </script>
 
 <style scoped>
-/* ── Page header ── */
-.cp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-top: 2rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.cp-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-navy, #0f172a);
-  margin: 0 0 0.25rem;
-}
-
-.cp-subtitle {
-  font-size: 0.9rem;
-  color: var(--color-muted, #94a3b8);
-  margin: 0;
-}
-
-.cp-header-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-/* ── Filter bar ── */
-.cp-filters {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
+/* ── Filter pills row ── */
+.filter-pills-row {
+  margin-bottom: 12px;
 }
 
 .filter-pills {
   display: flex;
-  gap: 0.5rem;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .filter-pill {
   background: transparent;
-  border: 1px solid var(--color-muted, #94a3b8);
-  color: var(--color-navy, #0f172a);
-  padding: 0.35rem 1rem;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
   border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 400;
+  padding: 3px 12px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  line-height: 1.6;
 }
 
 .filter-pill:hover {
-  border-color: var(--color-navy, #0f172a);
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .filter-pill--active {
-  background: var(--color-gold, #f59e0b);
-  border-color: var(--color-gold, #f59e0b);
-  color: var(--color-navy, #0f172a);
-  font-weight: 700;
+  background: #0f172a;
+  border-color: #0f172a;
+  color: white;
 }
 
-.cp-search {
-  border: 1px solid var(--color-form-border, #d1d5db);
+/* ── Search input (rendered inside #actions slot) ── */
+.search-input {
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 0.4rem 0.875rem;
-  font-size: 0.875rem;
-  color: var(--color-form-text, #111827);
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #0f172a;
+  background: white;
   font-family: inherit;
   min-width: 200px;
-  transition: border-color 0.15s ease;
+  height: 32px;
+  box-sizing: border-box;
+  transition: border-color 0.12s ease;
 }
 
-.cp-search:focus {
+.search-input:focus {
   outline: none;
-  border-color: var(--color-gold, #f59e0b);
+  border-color: #0f172a;
 }
 
-/* ── Table card ── */
-.cp-table-card {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+/* ── Main table card ── */
+.table-card {
+  background: white;
+  border: 0.5px solid #e2e8f0;
+  border-radius: 8px;
   overflow: hidden;
 }
 
-.cp-loading,
-.cp-empty {
-  padding: 3rem 1.5rem;
+.state-message {
+  padding: 48px 24px;
   text-align: center;
-  color: var(--color-muted, #94a3b8);
-  font-size: 0.9375rem;
+  color: #94a3b8;
+  font-size: 13px;
 }
 
-.cp-table-wrapper {
+.table-wrapper {
   overflow-x: auto;
 }
 
-.cp-table {
+/* ── Table ── */
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: 13px;
 }
 
-.cp-table th {
+.data-table thead {
   background: #f8fafc;
-  color: var(--color-muted, #94a3b8);
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.75rem 1rem;
+}
+
+.data-table th {
+  padding: 8px 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
 
-.cp-table td {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  color: var(--color-navy, #0f172a);
-  vertical-align: middle;
+.data-table tbody tr {
+  border-bottom: 0.5px solid #f1f5f9;
+  transition: background 0.1s ease;
 }
 
-.cp-table tbody tr:last-child td {
+.data-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.cp-table tbody tr:hover td {
-  background: #fafafa;
+.data-table tbody tr:hover {
+  background: rgba(248, 250, 252, 0.5);
+}
+
+.data-table td {
+  padding: 10px 16px;
+  color: #0f172a;
+  vertical-align: middle;
 }
 
 /* ── Asset cell ── */
-.td-asset { min-width: 180px; }
+.td-asset {
+  min-width: 180px;
+}
 
 .asset-cell {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.625rem;
+  gap: 10px;
 }
 
 .asset-thumb-wrap {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
-  background: #f1f5f9;
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: #f8fafc;
+  border: 0.5px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .asset-thumb {
@@ -722,257 +788,415 @@ function isImage(asset) {
 }
 
 .asset-thumb-icon {
-  font-size: 1.1rem;
+  font-size: 14px;
+  line-height: 1;
 }
 
 .asset-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-navy, #0f172a);
+  font-size: 13px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .warning-icon {
-  color: var(--color-consent-yellow, #f59e0b);
-  margin-left: 0.3rem;
-  font-size: 0.85rem;
+  color: #f59e0b;
+  margin-left: 4px;
+  font-size: 12px;
   cursor: help;
 }
 
-.td-type,
+.td-person,
 .td-date {
   white-space: nowrap;
 }
 
-/* ── Row action buttons ── */
-.td-actions {
+/* ── Status badge ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
   white-space: nowrap;
 }
 
-.action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.3rem;
+.status-badge--obtained {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge--pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.status-badge--denied {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ── Type badge ── */
+.type-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
   border-radius: 4px;
-  color: var(--color-muted, #94a3b8);
-  transition: color 0.15s ease, background 0.15s ease;
-  line-height: 0;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ── */
+.td-actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  flex-shrink: 0;
+}
+
+.action-btn--send:hover {
+  background: #fef9c3;
+  color: #854d0e;
 }
 
 .action-btn--edit:hover {
-  color: var(--color-navy, #0f172a);
   background: #f1f5f9;
+  color: #0f172a;
 }
 
 .action-btn--delete:hover {
-  color: var(--color-consent-red, #ef4444);
-  background: #fef2f2;
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* ── Pagination ── */
-.cp-pagination {
+.pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 8px;
+  border-top: 0.5px solid #e2e8f0;
+  padding: 12px;
 }
 
 .pagination-info {
-  font-size: 0.875rem;
-  color: var(--color-muted, #94a3b8);
+  font-size: 12px;
+  color: #64748b;
 }
 
-/* ── Shared buttons ── */
+/* ── Shared button classes ── */
 .btn-primary {
-  background: var(--color-gold, #f59e0b);
-  color: var(--color-navy, #0f172a);
+  background: #0f172a;
+  color: #f59e0b;
   border: none;
-  padding: 0.5rem 1.125rem;
   border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: opacity 0.15s ease;
-}
-
-.btn-primary:hover:not(:disabled) { opacity: 0.88; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btn-secondary {
-  background: transparent;
-  border: 1px solid var(--color-muted, #94a3b8);
-  color: var(--color-navy, #0f172a);
-  padding: 0.5rem 1.125rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s ease;
+  transition: opacity 0.12s ease;
+  white-space: nowrap;
 }
 
-.btn-secondary:hover:not(:disabled) { border-color: var(--color-navy, #0f172a); }
-.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
 
-.btn-danger {
-  background: var(--color-consent-red, #ef4444);
-  color: #ffffff;
-  border: none;
-  padding: 0.5rem 1.125rem;
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
   font-family: inherit;
-  transition: opacity 0.15s ease;
+  transition: border-color 0.12s ease, color 0.12s ease;
+  white-space: nowrap;
 }
 
-.btn-danger:hover:not(:disabled) { opacity: 0.88; }
-.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary:hover:not(:disabled) {
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 6px;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.12s ease;
+  white-space: nowrap;
+}
+
+.btn-danger:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Modal overlay ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
   z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 24px;
 }
 
 .modal-card {
-  background: #ffffff;
-  border-radius: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 0.5px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  max-width: 480px;
   width: 100%;
-  max-width: 560px;
+  padding: 24px;
   max-height: 92vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
 }
 
 .modal-card--sm {
   max-width: 400px;
 }
 
+/* ── Modal header ── */
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem 0;
+  margin-bottom: 20px;
 }
 
 .modal-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-navy, #0f172a);
+  font-size: 15px;
+  font-weight: 500;
+  color: #0f172a;
   margin: 0;
 }
 
 .modal-close {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
-  color: var(--color-muted, #94a3b8);
-  transition: color 0.15s ease;
+  color: #94a3b8;
+  transition: color 0.12s ease;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.modal-close:hover { color: var(--color-navy, #0f172a); }
+.modal-close:hover {
+  color: #0f172a;
+}
 
 /* ── Form inside modal ── */
 .modal-form {
-  padding: 1.25rem 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 14px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 4px;
 }
 
 .form-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-navy, #0f172a);
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
 }
 
 .form-optional {
   font-weight: 400;
-  color: var(--color-muted, #94a3b8);
+  color: #94a3b8;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .form-input {
-  border: 1px solid var(--color-form-border, #d1d5db);
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: var(--color-form-text, #111827);
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #0f172a;
+  background: white;
   font-family: inherit;
-  background: #ffffff;
-  transition: border-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.12s ease;
+  appearance: auto;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--color-gold, #f59e0b);
+  border-color: #0f172a;
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
 }
 
 .form-textarea {
   resize: vertical;
-  min-height: 5rem;
+  min-height: 80px;
+  padding: 7px 10px;
 }
 
 .form-file {
-  padding: 0.35rem 0.75rem;
+  padding: 6px 10px;
+  color: #64748b;
 }
 
 .form-error {
-  font-size: 0.75rem;
-  color: var(--color-error-text, #b91c1c);
+  font-size: 11px;
+  color: #991b1b;
+  margin-top: 2px;
 }
 
+/* ── Modal actions ── */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
+  gap: 8px;
+  padding-top: 8px;
 }
 
 /* ── Delete modal specific ── */
 .delete-confirm-text {
-  padding: 1rem 1.5rem 0;
-  font-size: 0.9375rem;
-  color: var(--color-navy, #0f172a);
-  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 20px;
+  line-height: 1.5;
 }
 
 .modal-actions--delete {
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding-top: 0;
+}
+
+/* ── Link modal ── */
+.link-modal-desc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.link-modal-note {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.link-copy-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.link-input {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: #0f172a;
+  background: #f8fafc;
+  font-family: monospace;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-copy {
+  height: 32px;
+  padding: 0 12px;
+  background: #0f172a;
+  color: #f59e0b;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: opacity 0.12s;
+  flex-shrink: 0;
+}
+
+.btn-copy:hover {
+  opacity: 0.88;
 }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
-  .cp-header {
-    flex-direction: column;
-  }
-
-  .cp-header-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .modal-overlay {
+    padding: 16px;
+    align-items: flex-end;
   }
 
   .modal-card {
     max-height: 95vh;
+    border-radius: 8px 8px 0 0;
+    max-width: 100%;
+  }
+
+  .asset-name {
+    max-width: 120px;
   }
 }
 </style>

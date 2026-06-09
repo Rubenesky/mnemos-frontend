@@ -29,6 +29,12 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/RegisterView.vue'),
+      meta: { guest: true },
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import('../views/DashboardView.vue'),
@@ -59,6 +65,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/assets/:id/audit',
+      name: 'asset-audit',
+      component: () => import('../views/AssetAuditView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'editor' },
+    },
+    {
       path: '/rag',
       name: 'rag',
       component: () => import('../views/RAGView.vue'),
@@ -69,6 +81,12 @@ const router = createRouter({
       name: 'public-gallery',
       component: () => import('@/views/PublicGalleryView.vue'),
       // NO meta.requiresAuth — public route
+    },
+    {
+      path: '/embed/:slug',
+      name: 'embed-gallery',
+      component: () => import('@/views/EmbedGalleryView.vue'),
+      // NO meta.requiresAuth — public standalone embed page
     },
     {
       path: '/consents',
@@ -83,6 +101,58 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/consent/:token',
+      name: 'public-consent',
+      component: () => import('@/views/PublicConsentView.vue'),
+      // NO meta.requiresAuth — public route, no login needed
+    },
+    {
+      path: '/press-room',
+      name: 'press-room',
+      component: () => import('@/views/PressRoomView.vue'),
+      // NO meta.requiresAuth — public route
+    },
+    {
+      path: '/reports',
+      name: 'reports',
+      component: () => import('@/views/ImpactReportView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
+      path: '/emergency-kit',
+      name: 'emergency-kit',
+      component: () => import('@/views/EmergencyKitView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'editor' },
+    },
+    {
+      path: '/admin',
+      redirect: '/admin/users',
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('@/views/AdminUsersView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
+      path: '/admin/settings',
+      name: 'admin-settings',
+      component: () => import('@/views/AdminSettingsView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
+      path: '/admin/system',
+      name: 'admin-system',
+      component: () => import('@/views/AdminSystemView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
+      path: '/admin/volunteers',
+      name: 'admin-volunteers',
+      component: () => import('@/views/AdminVolunteersView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
@@ -92,8 +162,13 @@ const router = createRouter({
 
 /**
  * Global navigation guard.
- * Redirects unauthenticated users away from protected routes and
- * authenticated users away from guest-only routes.
+ * - Unauthenticated access to a protected route → redirect to login.
+ * - Authenticated access to a guest-only route → redirect to dashboard.
+ * - Insufficient role for a role-gated route → redirect to dashboard.
+ *
+ * requiresRole values:
+ *   'admin'  — admin only
+ *   'editor' — admin or editor
  *
  * @param {import('vue-router').RouteLocationNormalized} to
  */
@@ -106,6 +181,18 @@ router.beforeEach((to) => {
 
   if (to.meta.guest && auth.isAuthenticated) {
     return { name: 'dashboard' }
+  }
+
+  const requiredRole = to.meta.requiresRole
+  if (requiredRole) {
+    const userRole = auth.user?.role
+    const allowed = {
+      admin: ['admin'],
+      editor: ['admin', 'editor'],
+    }
+    if (!allowed[requiredRole]?.includes(userRole)) {
+      return { name: 'dashboard' }
+    }
   }
 
   return true

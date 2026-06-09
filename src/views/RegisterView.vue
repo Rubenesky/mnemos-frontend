@@ -1,14 +1,24 @@
 <template>
-  <div class="login-page">
-    <!-- Logo area above the card -->
-    <div class="login-logo-area">
+  <div class="register-page">
+    <div class="register-logo-area">
       <RouterLink to="/gallery" class="logo-link"><MnemosLogo /></RouterLink>
-      <p class="login-tagline">{{ t('onboarding.tagline') }}</p>
+      <p class="register-tagline">{{ t('onboarding.tagline') }}</p>
     </div>
 
-    <div class="login-card">
-      <!-- Form -->
-      <form @submit.prevent="handleLogin" class="login-form">
+    <div class="register-card">
+      <form @submit.prevent="handleRegister" class="register-form">
+        <div class="form-group">
+          <label class="form-label">{{ t('auth.name') }}</label>
+          <input
+            v-model="name"
+            type="text"
+            required
+            placeholder="Jane Doe"
+            class="form-input"
+            :disabled="loading"
+          />
+        </div>
+
         <div class="form-group">
           <label class="form-label">{{ t('auth.email') }}</label>
           <input
@@ -33,21 +43,30 @@
           />
         </div>
 
+        <div class="form-group">
+          <label class="form-label">{{ t('auth.confirmPassword') }}</label>
+          <input
+            v-model="passwordConfirmation"
+            type="password"
+            required
+            placeholder="••••••••"
+            class="form-input"
+            :disabled="loading"
+          />
+        </div>
+
         <div v-if="error" class="form-error" aria-live="polite" role="alert">
           {{ error }}
         </div>
 
-        <button
-          type="submit"
-          :disabled="loading"
-          class="btn-submit"
-        >
-          {{ loading ? t('auth.signingIn') : t('auth.login') }}
+        <button type="submit" :disabled="loading" class="btn-submit">
+          {{ loading ? t('auth.registering') : t('auth.register') }}
         </button>
       </form>
+
       <p class="form-footer">
-        {{ t('auth.noAccount') }}
-        <RouterLink to="/register" class="form-link">{{ t('auth.register') }}</RouterLink>
+        {{ t('auth.alreadyAccount') }}
+        <RouterLink to="/login" class="form-link">{{ t('auth.login') }}</RouterLink>
       </p>
     </div>
     <RouterLink to="/gallery" class="gallery-link">{{ t('auth.viewGallery') }}</RouterLink>
@@ -60,29 +79,46 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import MnemosLogo from '../components/MnemosLogo.vue'
+import api from '../api/axios'
 
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 
+const name = ref('')
 const email = ref('')
 const password = ref('')
+const passwordConfirmation = ref('')
 const error = ref('')
 const loading = ref(false)
 
-async function handleLogin() {
+async function handleRegister() {
   error.value = ''
-  loading.value = true
 
+  if (password.value !== passwordConfirmation.value) {
+    error.value = 'Las contraseñas no coinciden.'
+    return
+  }
+
+  loading.value = true
   try {
-    await auth.login(email.value, password.value)
-    if (!localStorage.getItem('hasSeenOnboarding')) {
-      router.push({ name: 'onboarding' })
-    } else {
-      router.push({ name: 'dashboard' })
-    }
+    const response = await api.post('/register', {
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      password_confirmation: passwordConfirmation.value,
+    })
+
+    auth.setSession(response.data.token, response.data.user)
+
+    router.push({ name: 'dashboard' })
   } catch (e) {
-    error.value = t('auth.invalidCredentials')
+    const status = e.response?.status
+    if (status === 422) {
+      error.value = t('auth.emailTaken')
+    } else {
+      error.value = 'Error al crear la cuenta. Inténtalo de nuevo.'
+    }
   } finally {
     loading.value = false
   }
@@ -90,7 +126,7 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.login-page {
+.register-page {
   min-height: 100vh;
   background:
     radial-gradient(ellipse at 12% 60%, rgba(245, 158, 11, 0.18) 0%, transparent 50%),
@@ -107,32 +143,32 @@ async function handleLogin() {
 
 .logo-link { display: contents; text-decoration: none; }
 
-.login-logo-area {
+.register-logo-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
 }
 
-.login-logo-area :deep(.logo-img) {
+.register-logo-area :deep(.logo-img) {
   height: 112px;
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(245, 158, 11, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.login-logo-area :deep(.logo-wordmark) {
+.register-logo-area :deep(.logo-wordmark) {
   font-size: 22px;
   font-weight: 700;
 }
 
-.login-tagline {
+.register-tagline {
   color: #94a3b8;
   font-size: 13px;
   text-align: center;
   margin: 0;
 }
 
-.login-card {
+.register-card {
   background: #ffffff;
   border: 0.5px solid #e2e8f0;
   border-radius: 12px;
@@ -141,7 +177,7 @@ async function handleLogin() {
   max-width: 380px;
 }
 
-.login-form {
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;

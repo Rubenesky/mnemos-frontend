@@ -156,11 +156,11 @@ const MAX_SIZE_BYTES = 10 * 1024 * 1024
 
 function setFile(file) {
   if (!ALLOWED_TYPES.includes(file.type)) {
-    toast.error('File type not allowed. Use images, PDF, video or audio.')
+    toast.error(t('upload.typeError'))
     return
   }
   if (file.size > MAX_SIZE_BYTES) {
-    toast.error('File exceeds the 10MB limit.')
+    toast.error(t('upload.sizeError'))
     return
   }
   selectedFile.value = file
@@ -203,9 +203,9 @@ async function handleUpload() {
   } catch (e) {
     loading.value = false
     if (e.response?.status === 409) {
-      toast.error('❌ This exact file already exists on the platform. It has not been uploaded.')
+      toast.error(t('upload.duplicate'))
     } else {
-      toast.error('Error uploading file. Please try again.')
+      toast.error(t('upload.error'))
     }
   }
 }
@@ -225,13 +225,13 @@ function pollStatus(assetId) {
         if (status === 'processed') {
           clearInterval(activeInterval)
           pollingMessage.value = ''
-          toast.success('Asset processed successfully ✨')
+          toast.success(t('upload.processed'))
           router.push({ name: 'asset-detail', params: { id: assetId } })
           resolve()
         } else if (status === 'failed') {
           clearInterval(activeInterval)
           pollingMessage.value = ''
-          toast.error('Could not generate metadata. The asset is available without it.')
+          toast.error(t('upload.metadataFailed'))
           router.push({ name: 'asset-detail', params: { id: assetId } })
           resolve()
         } else if (attempts >= MAX_ATTEMPTS) {

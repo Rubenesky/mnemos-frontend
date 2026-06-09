@@ -41,6 +41,19 @@ export const useAuthStore = defineStore('auth', () => {
   )
 
   /**
+   * Persist a token + user pair to reactive state and localStorage.
+   *
+   * @param {string} sessionToken
+   * @param {object} sessionUser
+   */
+  function setSession(sessionToken, sessionUser) {
+    token.value = sessionToken
+    user.value = sessionUser
+    localStorage.setItem('token', sessionToken)
+    localStorage.setItem('user', JSON.stringify(sessionUser))
+  }
+
+  /**
    * Authenticate with email and password.
    * Persists the returned token and user object to localStorage.
    *
@@ -50,12 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function login(email, password) {
     const response = await api.post('/login', { email, password })
-
-    token.value = response.data.token
-    user.value = response.data.user
-
-    localStorage.setItem('token', token.value)
-    localStorage.setItem('user', JSON.stringify(user.value))
+    setSession(response.data.token, response.data.user)
   }
 
   /**
@@ -79,5 +87,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  return { token, user, isAuthenticated, isAdmin, isEditor, isVolunteer, isExpired, login, logout }
+  return {
+    token,
+    user,
+    isAuthenticated,
+    isAdmin,
+    isEditor,
+    isVolunteer,
+    isExpired,
+    setSession,
+    login,
+    logout,
+  }
 })

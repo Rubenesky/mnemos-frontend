@@ -1,17 +1,21 @@
 <template>
   <div class="mnemos-logo">
-    <img src="/logo.png" alt="Mnemos logo" class="mnemos-logo-img" />
+    <img src="/logo.png" alt="Mnemos" class="logo-img" />
   </div>
 </template>
 
 <style scoped>
 .mnemos-logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  user-select: none;
 }
 
-.mnemos-logo-img {
-  height: 2.5rem;
+.logo-img {
+  height: 72px;
   width: auto;
+  border-radius: 10px;
+  display: block;
+  flex-shrink: 0;
 }
 </style>

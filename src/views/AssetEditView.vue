@@ -155,7 +155,7 @@ onMounted(async () => {
     form.value.alt_text = asset.alt_text ?? ''
     form.value.is_public = asset.is_public ?? false
   } catch (e) {
-    toast.error('Error loading asset.')
+    toast.error(t('edit.loadError'))
   } finally {
     loading.value = false
   }
@@ -177,10 +177,10 @@ async function handleUpdate() {
     }
     await api.patch(`/assets/${route.params.id}`, payload)
 
-    toast.success('Asset updated successfully.')
+    toast.success(t('edit.saved'))
     router.push({ name: 'asset-detail', params: { id: route.params.id } })
   } catch (e) {
-    toast.error('Error updating asset.')
+    toast.error(t('edit.saveError'))
   } finally {
     saving.value = false
   }

@@ -2,10 +2,10 @@
 
 > *Open memory for organizations that matter*
 
+[![Backend Tests](https://img.shields.io/badge/backend%20tests-90%20passed-brightgreen.svg)](https://github.com/rubenesky/mnemos-backend)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Vue 3](https://img.shields.io/badge/Vue-3-42b883.svg?logo=vue.js)](https://vuejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-8-646cff.svg?logo=vite)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8.svg?logo=tailwindcss)](https://tailwindcss.com/)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%99%A5-red.svg)](https://github.com/rubenesky/mnemos-frontend)
 
 ---
@@ -29,15 +29,21 @@ Mnemos ships with a set of screens designed for both technical administrators an
 | **Asset Detail** | Full metadata view including AI-generated tags, descriptions, and GDPR consent status |
 | **Asset Edit** | Update metadata and apply AI-suggested variants for titles, descriptions, and tags with one click |
 | **Public Gallery** | Share collections publicly without requiring visitor login |
-| **GDPR Consent Panel** | Track and manage consent per asset with color-coded badges |
+| **GDPR Consent Panel** | Track and manage consent per asset with color-coded badges and CSV export |
+| **Consent Request Form** | Generate a shareable token link for any pending consent; recipient responds without an account |
 | **AI Chat (RAG)** | Ask questions about your archive in plain language and get answers grounded in your data |
-| **Onboarding** | Welcome screen for first-time login to guide new users |
+| **Notification Bell** | Topbar bell with unread badge — fires on volunteer uploads and consent responses |
+| **Onboarding Modal** | 3-step guided modal on first login; shown once, tracked in localStorage |
 
 ### Screenshots
 
-| Dashboard | Asset Gallery | Upload |
+| Dashboard | Asset Gallery | GDPR Consent Panel |
 |---|---|---|
-| ![Dashboard](screenshots/01-dashboard.jpg) | ![Assets](screenshots/02-assets.jpg) | ![Upload](screenshots/03-upload.jpg) |
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Assets](docs/screenshots/02-assets.png) | ![Consents](docs/screenshots/04-consent-panel.png) |
+
+| Asset Upload | AI Chat | Onboarding Modal |
+|---|---|---|
+| ![Upload](docs/screenshots/03-upload.png) | ![RAG](docs/screenshots/05-ai-chat.png) | ![Onboarding](docs/screenshots/07-onboarding.png) |
 
 ---
 

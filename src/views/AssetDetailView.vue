@@ -22,6 +22,35 @@
           >
             {{ asset.is_public ? '🌐 ' + t('detail.public') : '🔒 ' + t('detail.private') }}
           </button>
+          <button
+            v-if="auth.isAdmin || auth.isEditor"
+            @click="togglePressKit"
+            :disabled="pressKitLoading"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            :class="asset.is_press_kit
+              ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'"
+          >
+            {{ asset.is_press_kit ? t('detail.pressKit') : t('detail.notPressKit') }}
+          </button>
+          <button
+            v-if="auth.isAdmin || auth.isEditor"
+            @click="toggleEmergencyKit"
+            :disabled="emergencyKitLoading"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            :class="asset.is_emergency_kit
+              ? 'bg-red-100 text-red-800 hover:bg-red-200'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'"
+          >
+            {{ asset.is_emergency_kit ? t('detail.inKit') : t('detail.addToKit') }}
+          </button>
+          <RouterLink
+            v-if="auth.isAdmin || auth.isEditor"
+            :to="`/assets/${asset.id}/audit`"
+            class="bg-amber-50 text-amber-800 border border-amber-200 px-4 py-2 rounded-lg hover:bg-amber-100 text-sm font-medium transition"
+          >
+            🕓 {{ t('detail.viewHistory') }}
+          </RouterLink>
           <RouterLink
             :to="`/assets/${asset.id}/edit`"
             class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
@@ -46,14 +75,21 @@
         <img
           v-if="asset.mime_type.startsWith('image/')"
           :src="asset.url"
-          :alt="asset.original_name"
+          :alt="asset.alt_text || asset.original_name"
           class="max-h-96 mx-auto rounded-lg"
+        />
+        <iframe
+          v-else-if="asset.mime_type === 'application/pdf'"
+          :src="asset.url"
+          class="w-full rounded-lg border-0"
+          style="height: 520px;"
+          :title="asset.original_name"
         />
         <div
           v-else
           class="flex items-center justify-center h-40 bg-gray-100 dark:bg-gray-700 rounded-lg"
         >
-          <span class="text-6xl">📄</span>
+          <AssetTypeIcon :mime-type="asset.mime_type" :size="56" />
         </div>
       </div>
 
@@ -279,6 +315,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
+import AssetTypeIcon from '../components/AssetTypeIcon.vue'
 import ConsentBadge from '../components/ConsentBadge.vue'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
@@ -296,6 +333,8 @@ const variantsLoading = ref(false)
 const assetConsents = ref([])
 const consentsLoading = ref(false)
 const publishLoading = ref(false)
+const pressKitLoading = ref(false)
+const emergencyKitLoading = ref(false)
 
 function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-GB', {
@@ -321,15 +360,43 @@ async function togglePublic() {
   }
 }
 
+async function togglePressKit() {
+  pressKitLoading.value = true
+  try {
+    const newValue = !asset.value.is_press_kit
+    await api.patch(`/assets/${route.params.id}/press-kit`, { is_press_kit: newValue })
+    asset.value.is_press_kit = newValue
+    toast.success(newValue ? t('detail.addedToPressKit') : t('detail.removedFromPressKit'))
+  } catch {
+    toast.error(t('detail.pressKitError'))
+  } finally {
+    pressKitLoading.value = false
+  }
+}
+
+async function toggleEmergencyKit() {
+  emergencyKitLoading.value = true
+  try {
+    const newValue = !asset.value.is_emergency_kit
+    await api.patch(`/assets/${route.params.id}/emergency-kit`, { is_emergency_kit: newValue })
+    asset.value.is_emergency_kit = newValue
+    toast.success(newValue ? t('emergencyKit.toggleAdded') : t('emergencyKit.toggleRemoved'))
+  } catch {
+    toast.error(t('emergencyKit.toggleError'))
+  } finally {
+    emergencyKitLoading.value = false
+  }
+}
+
 async function handleDelete() {
   if (!confirm(t('detail.deleteConfirm'))) return
 
   try {
     await api.delete(`/assets/${route.params.id}`)
-    toast.success('Asset deleted successfully.')
+    toast.success(t('detail.deleted'))
     router.push({ name: 'assets' })
   } catch (e) {
-    toast.error('Error deleting asset.')
+    toast.error(t('detail.deleteError'))
   }
 }
 
@@ -340,9 +407,9 @@ async function generateVariants() {
   try {
     const response = await api.post(`/assets/${route.params.id}/variants`)
     variants.value = response.data.variants
-    toast.success('Suggestions generated successfully.')
+    toast.success(t('detail.suggestionsGenerated'))
   } catch (e) {
-    toast.error('Error generating suggestions. Please try again.')
+    toast.error(t('detail.suggestionsError'))
   } finally {
     variantsLoading.value = false
   }
@@ -361,9 +428,9 @@ async function applyVariant(field, value) {
     if (field === 'title') asset.value.metadata.title = value
     if (field === 'description') asset.value.metadata.description = value
 
-    toast.success('Metadata updated successfully.')
+    toast.success(t('detail.metadataUpdated'))
   } catch (e) {
-    toast.error('Error applying suggestion.')
+    toast.error(t('detail.applyError'))
   }
 }
 
@@ -371,7 +438,7 @@ async function applyTag(tag) {
   try {
     const currentTags = asset.value.metadata?.tags ?? []
     if (currentTags.includes(tag)) {
-      toast.info('That tag already exists in the metadata.')
+      toast.info(t('detail.tagExists'))
       return
     }
 
@@ -383,9 +450,9 @@ async function applyTag(tag) {
     })
 
     asset.value.metadata.tags = newTags
-    toast.success(`Tag "${tag}" added successfully.`)
+    toast.success(t('detail.tagAdded', { tag }))
   } catch (e) {
-    toast.error('Error adding tag.')
+    toast.error(t('detail.tagError'))
   }
 }
 

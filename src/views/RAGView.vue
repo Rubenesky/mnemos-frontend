@@ -1,74 +1,43 @@
 <template>
-  <AppLayout>
-    <div class="space-y-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ t('rag.title') }}</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {{ t('rag.subtitle') }}
-        </p>
-      </div>
-
-      <!-- Chat history -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 min-h-96 space-y-4">
-        <div v-if="messages.length === 0" class="text-center py-16 text-gray-400">
-          <p class="text-4xl mb-3">🤖</p>
-          <p class="text-sm">{{ t('rag.askQuestion') }}</p>
-          <div class="mt-4 space-y-2">
+  <AppLayout :title="t('rag.title')">
+    <div class="rag-view">
+      <div class="chat-card" ref="chatBox">
+        <div v-if="messages.length === 0" class="empty-state">
+          <span class="empty-icon">🤖</span>
+          <p class="empty-text">{{ t('rag.askQuestion') }}</p>
+          <div class="examples-list">
             <button
               v-for="example in examples"
               :key="example"
+              class="example-btn"
               @click="askExample(example)"
-              class="block w-full text-left text-xs bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition"
             >
               {{ example }}
             </button>
           </div>
         </div>
 
-        <div v-for="(msg, i) in messages" :key="i">
-          <!-- User question -->
-          <div class="flex justify-end">
-            <div
-              class="bg-blue-600 text-white px-4 py-2 rounded-xl rounded-tr-none max-w-md text-sm"
-            >
-              {{ msg.question }}
-            </div>
-          </div>
-          <!-- AI response -->
-          <div class="flex justify-start mt-2">
-            <div
-              class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-xl rounded-tl-none max-w-md text-sm"
-            >
-              <span class="text-purple-600 dark:text-purple-400 font-medium">✨ AI: </span>
-              {{ msg.answer }}
-            </div>
+        <div v-for="(msg, i) in messages" :key="i" class="msg-group">
+          <div class="bubble bubble--user">{{ msg.question }}</div>
+          <div class="bubble bubble--ai">
+            <span class="ai-label">✨ IA</span>
+            {{ msg.answer }}
           </div>
         </div>
 
-        <!-- Loading -->
-        <div v-if="loading" class="flex justify-start">
-          <div
-            class="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl rounded-tl-none text-sm text-gray-400"
-          >
-            {{ t('rag.querying') }}
-          </div>
+        <div v-if="loading" class="msg-group">
+          <div class="bubble bubble--loading">{{ t('rag.querying') }}</div>
         </div>
       </div>
 
-      <!-- Input field -->
-      <div class="flex gap-3">
+      <div class="input-bar">
         <input
           v-model="question"
           type="text"
           :placeholder="t('rag.placeholder')"
-          class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleQuery"
         />
-        <button
-          @click="handleQuery"
-          :disabled="loading || !question"
-          class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
-        >
+        <button class="btn-send" :disabled="loading || !question" @click="handleQuery">
           {{ t('rag.askBtn') }}
         </button>
       </div>
@@ -77,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import { useToastStore } from '../stores/toast'
@@ -88,6 +57,7 @@ const toast = useToastStore()
 const question = ref('')
 const loading = ref(false)
 const messages = ref([])
+const chatBox = ref(null)
 
 const examples = computed(() => [
   t('rag.example1'),
@@ -110,8 +80,10 @@ async function handleQuery() {
       question: userQuestion,
       answer: response.data.answer,
     })
+    await nextTick()
+    if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight
   } catch (e) {
-    toast.error('Error querying AI. Please try again.')
+    toast.error(t('rag.queryError'))
   } finally {
     loading.value = false
   }
@@ -122,3 +94,166 @@ function askExample(example) {
   handleQuery()
 }
 </script>
+
+<style scoped>
+.rag-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-card {
+  background: #ffffff;
+  border: 0.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 420px;
+  max-height: calc(100vh - 52px - 48px - 60px);
+  overflow-y: auto;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 0;
+}
+
+.empty-icon { font-size: 32px; }
+
+.empty-text {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 8px;
+}
+
+.example-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  font-family: inherit;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.example-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.msg-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bubble {
+  max-width: 75%;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.bubble--user {
+  align-self: flex-end;
+  background: #0f172a;
+  color: #ffffff;
+  border-radius: 8px 8px 0 8px;
+}
+
+.bubble--ai {
+  align-self: flex-start;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  border-radius: 8px 8px 8px 0;
+}
+
+.ai-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #f59e0b;
+  margin-bottom: 4px;
+}
+
+.bubble--loading {
+  align-self: flex-start;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #94a3b8;
+  border-radius: 8px 8px 8px 0;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.input-bar {
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.input-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.input-bar input::placeholder {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.btn-send {
+  height: 28px;
+  padding: 0 12px;
+  background: #f59e0b;
+  color: #0f172a;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.12s ease;
+  flex-shrink: 0;
+}
+
+.btn-send:hover:not(:disabled) { opacity: 0.88; }
+.btn-send:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>

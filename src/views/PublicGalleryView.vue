@@ -1,73 +1,79 @@
 <template>
   <div class="gallery-page">
-    <!-- Header -->
+
+    <!-- Sticky Header -->
     <header class="gallery-header">
-      <div class="gallery-header-top">
+      <div class="header-logo">
         <MnemosLogo />
-        <RouterLink to="/login" class="gallery-login-btn">{{ t('auth.login') }}</RouterLink>
       </div>
-      <div class="gallery-header-inner">
-        <p class="gallery-tagline">{{ t('gallery.tagline') }}</p>
-        <p class="gallery-subtitle">
-          {{ t('gallery.discoverArchive') }}
-          <span class="gallery-org-name">{{ orgName }}</span>
-        </p>
+      <div class="header-actions">
+        <RouterLink v-if="pressRoomAvailable" to="/press-room" class="btn-pressroom">{{ t('gallery.pressRoom') }}</RouterLink>
+        <RouterLink to="/register" class="btn-register">{{ t('auth.register') }}</RouterLink>
+        <RouterLink to="/login" class="btn-primary">{{ t('auth.login') }}</RouterLink>
       </div>
     </header>
 
+    <!-- Hero -->
+    <section class="hero">
+      <h1 class="hero-title">{{ orgName }}</h1>
+      <p class="hero-subtitle">{{ t('gallery.tagline') }}</p>
+
+      <!-- Collection pills (only when >1 collection and not loading) -->
+      <div
+        v-if="!loadingCollections && collections.length > 1"
+        class="collection-pills"
+        role="tablist"
+        aria-label="Collections"
+      >
+        <button
+          v-for="col in collections"
+          :key="col.id"
+          class="collection-pill"
+          :class="{ 'collection-pill--active': selectedCollection?.id === col.id }"
+          @click="selectCollection(col)"
+          role="tab"
+          :aria-selected="selectedCollection?.id === col.id"
+        >
+          {{ col.name }}
+        </button>
+      </div>
+    </section>
+
     <!-- Main content -->
     <main class="gallery-main">
-      <!-- Loading state -->
-      <div v-if="loadingCollections" class="gallery-loading" aria-live="polite">
-        <div class="skeleton-pills">
-          <div class="skeleton-pill" v-for="n in 3" :key="n"></div>
-        </div>
-        <div class="asset-grid">
-          <div class="skeleton-card" v-for="n in 8" :key="n">
-            <div class="skeleton-thumb"></div>
-            <div class="skeleton-body">
-              <div class="skeleton-line skeleton-line--title"></div>
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-tags">
-                <div class="skeleton-tag"></div>
-                <div class="skeleton-tag"></div>
-              </div>
+
+      <!-- Loading collections -->
+      <div v-if="loadingCollections" class="asset-grid">
+        <div class="skeleton-card" v-for="n in 8" :key="n">
+          <div class="skeleton-thumb"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line skeleton-line--title"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-tags-row">
+              <div class="skeleton-tag"></div>
+              <div class="skeleton-tag"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Empty state -->
-      <div v-else-if="collections.length === 0" class="gallery-empty">
+      <!-- Empty state — no collections -->
+      <div v-else-if="collections.length === 0" class="empty-state">
         <MnemosLogo />
-        <p class="gallery-empty-title">{{ t('gallery.noCollections') }}</p>
-        <p class="gallery-empty-sub">{{ t('gallery.noCollectionsSub') }}</p>
+        <p class="empty-title">{{ t('gallery.noCollections') }}</p>
+        <p class="empty-sub">{{ t('gallery.noCollectionsSub') }}</p>
       </div>
 
       <template v-else>
-        <!-- Collection selector pills -->
-        <div v-if="collections.length > 1" class="collection-pills" role="tablist" aria-label="Collections">
-          <button
-            v-for="col in collections"
-            :key="col.id"
-            class="collection-pill"
-            :class="{ 'collection-pill--active': selectedCollection?.id === col.id }"
-            @click="selectCollection(col)"
-            role="tab"
-            :aria-selected="selectedCollection?.id === col.id"
-          >
-            {{ col.name }}
-          </button>
-        </div>
 
-        <!-- Asset grid: loading -->
+        <!-- Loading assets -->
         <div v-if="loadingAssets" class="asset-grid">
           <div class="skeleton-card" v-for="n in 8" :key="n">
             <div class="skeleton-thumb"></div>
             <div class="skeleton-body">
               <div class="skeleton-line skeleton-line--title"></div>
               <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-tags">
+              <div class="skeleton-tags-row">
                 <div class="skeleton-tag"></div>
                 <div class="skeleton-tag"></div>
               </div>
@@ -75,12 +81,12 @@
           </div>
         </div>
 
-        <!-- Asset grid: empty collection -->
-        <div v-else-if="assets.length === 0" class="assets-empty">
+        <!-- Empty collection -->
+        <div v-else-if="assets.length === 0" class="empty-collection">
           <p>{{ t('gallery.noAssets') }}</p>
         </div>
 
-        <!-- Asset grid: cards -->
+        <!-- Asset grid -->
         <div v-else class="asset-grid">
           <article
             v-for="asset in assets"
@@ -91,8 +97,7 @@
             @click="openAsset(asset)"
             @keydown.enter="openAsset(asset)"
           >
-            <!-- Thumbnail or type icon -->
-            <div class="asset-card-thumb">
+            <div class="asset-thumb">
               <img
                 v-if="isImage(asset)"
                 :src="asset.cloudinary_url"
@@ -106,49 +111,73 @@
               </div>
             </div>
 
-            <!-- Card body -->
-            <div class="asset-card-body">
+            <div class="asset-body">
               <h3 class="asset-title">{{ getTitle(asset) }}</h3>
               <div v-if="getTags(asset).length" class="asset-tags">
                 <span
                   v-for="tag in getTags(asset)"
                   :key="tag"
                   class="asset-tag"
-                >
-                  {{ tag }}
-                </span>
+                >{{ tag }}</span>
               </div>
-              <span class="asset-view-link">View →</span>
+              <span class="asset-date">{{ formatDate(asset.created_at) }}</span>
             </div>
           </article>
         </div>
+
       </template>
     </main>
 
+    <!-- Embed widget panel — admin/editor only, when a collection is active -->
+    <div
+      v-if="(auth.isAdmin || auth.isEditor) && selectedCollection"
+      class="gallery-main"
+    >
+      <EmbedCodePanel :slug="selectedCollection.slug" />
+    </div>
+
     <!-- Asset detail modal -->
-    <div v-if="activeAsset" class="modal-overlay" @click.self="closeAsset" @keydown.escape="closeAsset">
-      <div class="modal-card" role="dialog" aria-modal="true" :aria-label="getTitle(activeAsset)">
+    <div
+      v-if="activeAsset"
+      class="modal-overlay"
+      @click.self="closeAsset"
+      @keydown.escape="closeAsset"
+    >
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="getTitle(activeAsset)"
+      >
         <button class="modal-close" @click="closeAsset" aria-label="Close">&times;</button>
 
-        <div v-if="loadingDetail" class="modal-loading">
+        <div v-if="loadingDetail" class="modal-spinner-wrap">
           <div class="spinner"></div>
         </div>
 
         <template v-else>
-          <div class="modal-thumb" v-if="isImage(activeAsset)">
-            <img :src="activeAsset.cloudinary_url" :alt="getTitle(activeAsset)" class="modal-img" />
+          <div class="modal-media" v-if="isImage(activeAsset)">
+            <img
+              :src="activeAsset.cloudinary_url"
+              :alt="getTitle(activeAsset)"
+              class="modal-img"
+            />
           </div>
-          <div class="modal-type-icon" v-else>
+          <div class="modal-media modal-media--icon" v-else>
             <span class="modal-type-emoji">{{ getTypeIcon(activeAsset) }}</span>
           </div>
 
           <div class="modal-body">
             <h2 class="modal-title">{{ getTitle(activeAsset) }}</h2>
-            <p v-if="activeAsset.metadata?.description" class="modal-description">
+            <p v-if="activeAsset.metadata?.description" class="modal-desc">
               {{ activeAsset.metadata.description }}
             </p>
-            <div v-if="getTags(activeAsset).length" class="asset-tags modal-tags">
-              <span v-for="tag in getTags(activeAsset)" :key="tag" class="asset-tag">{{ tag }}</span>
+            <div v-if="getTags(activeAsset).length" class="asset-tags">
+              <span
+                v-for="tag in getTags(activeAsset)"
+                :key="tag"
+                class="asset-tag"
+              >{{ tag }}</span>
             </div>
             <p v-if="activeAsset.created_at" class="modal-meta">
               {{ t('gallery.addedOn') }} {{ formatDate(activeAsset.created_at) }}
@@ -160,27 +189,24 @@
 
     <!-- Footer -->
     <footer class="gallery-footer">
-      <p class="footer-tagline">{{ t('gallery.tagline') }}</p>
-      <a
-        href="https://github.com/rubenesky/mnemos-frontend"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="footer-github"
-      >
-        GitHub
-      </a>
+      <p class="footer-copy">{{ t('gallery.tagline') }}</p>
     </footer>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
-import MnemosLogo from '@/components/MnemosLogo.vue'
+import MnemosLogo from '../components/MnemosLogo.vue'
 import { useToastStore } from '@/stores/toast'
+import { useAuthStore } from '@/stores/auth'
+import EmbedCodePanel from '@/components/EmbedCodePanel.vue'
+
 const { t } = useI18n()
 const toast = useToastStore()
+const auth = useAuthStore()
 
 // Public axios instance — no auth token attached
 const publicApi = axios.create({
@@ -199,17 +225,18 @@ const loadingCollections = ref(true)
 const loadingAssets = ref(false)
 const activeAsset = ref(null)
 const loadingDetail = ref(false)
+const pressRoomAvailable = ref(false)
 
-// Derived org name from first collection or fallback
-const orgName = computed(() => {
-  if (collections.value.length > 0 && collections.value[0].organization) {
-    return collections.value[0].organization
-  }
-  return 'your organization'
-})
+const orgName = ref('Mnemos')
 
 onMounted(async () => {
   await fetchCollections()
+  try {
+    const { data } = await publicApi.get('/public/press-room')
+    pressRoomAvailable.value = (data.data?.length ?? 0) > 0
+  } catch {
+    // silent — link simply won't appear
+  }
 })
 
 async function fetchCollections() {
@@ -217,11 +244,12 @@ async function fetchCollections() {
   try {
     const { data } = await publicApi.get('/public/collections')
     collections.value = Array.isArray(data) ? data : (data.data ?? [])
+    orgName.value = data.org_name ?? 'Mnemos'
     if (collections.value.length > 0) {
       await selectCollection(collections.value[0])
     }
   } catch {
-    toast.error('Failed to load collections. Please try again.')
+    toast.error(t('gallery.loadError'))
     collections.value = []
   } finally {
     loadingCollections.value = false
@@ -246,7 +274,7 @@ async function selectCollection(col) {
       assets.value = []
     }
   } catch {
-    toast.error('Failed to load collection. Please try again.')
+    toast.error(t('gallery.loadCollectionError'))
     assets.value = []
   } finally {
     loadingAssets.value = false
@@ -260,7 +288,7 @@ async function openAsset(asset) {
     const { data } = await publicApi.get(`/public/assets/${asset.id}`)
     activeAsset.value = data.data ?? data
   } catch {
-    toast.error('Failed to load asset details.')
+    toast.error(t('gallery.loadDetailError'))
     // keep the data we already have from the list
   } finally {
     loadingDetail.value = false
@@ -292,7 +320,7 @@ function getMimeLabel(asset) {
 }
 
 function getTitle(asset) {
-  return asset?.metadata?.title || asset?.original_name || 'Untitled'
+  return asset?.metadata?.title || asset?.title || asset?.original_name || 'Untitled'
 }
 
 function getTags(asset) {
@@ -314,171 +342,214 @@ function formatDate(dateStr) {
 </script>
 
 <style scoped>
-/* ── Page ── */
+/* ── Reset & page shell ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .gallery-page {
   min-height: 100vh;
-  background: var(--color-navy, #0f172a);
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
-  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  color: #0f172a;
 }
 
-/* ── Header ── */
+/* ── Sticky header ── */
 .gallery-header {
-  padding: 1.5rem 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.gallery-header-top {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-bottom: 0.5px solid #e2e8f0;
+  padding: 12px 32px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto 1.5rem;
 }
 
-.gallery-login-btn {
-  background: var(--color-gold, #f59e0b);
-  color: var(--color-navy, #0f172a);
-  padding: 0.5rem 1.25rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.15s;
+.header-logo {
+  flex: 0 0 auto;
 }
 
-.gallery-login-btn:hover {
-  opacity: 0.85;
+.header-logo :deep(.logo-img) {
+  height: 130px;
+  width: auto;
+  border-radius: 16px;
+  display: block;
 }
 
-.gallery-header-inner {
+.header-actions {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  max-width: 700px;
-  margin: 0 auto;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.btn-pressroom {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #f59e0b;
+  text-decoration: none;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+}
+
+.btn-pressroom:hover {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.btn-register {
+  display: inline-flex;
+  align-items: center;
+  background: #0f172a;
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  text-decoration: none;
+  transition: opacity 0.12s ease;
+  white-space: nowrap;
+}
+
+.btn-register:hover {
+  opacity: 0.88;
+}
+
+/* ── Login button ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  background: #0f172a;
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  opacity: 0.88;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 32px 24px 24px;
   text-align: center;
 }
 
-.gallery-tagline {
-  color: var(--color-muted, #94a3b8);
-  font-size: 1rem;
+.hero-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: #0f172a;
+  letter-spacing: -0.02em;
   margin: 0;
+  line-height: 1.3;
 }
 
-.gallery-subtitle {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.gallery-org-name {
-  color: var(--color-gold, #f59e0b);
-  font-weight: 600;
-}
-
-/* ── Main ── */
-.gallery-main {
-  flex: 1;
-  max-width: 1280px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+.hero-subtitle {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 4px 0 0;
 }
 
 /* ── Collection pills ── */
 .collection-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.625rem;
-  margin-bottom: 2rem;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0 0;
 }
 
 .collection-pill {
-  background: transparent;
-  border: 1px solid var(--color-muted, #94a3b8);
-  color: #ffffff;
-  padding: 0.4rem 1.1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 4px 14px;
   border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  font-family: var(--font-sans, 'Inter', sans-serif);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .collection-pill:hover {
-  border-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .collection-pill:focus-visible {
-  outline: 2px solid var(--color-gold, #f59e0b);
+  outline: 2px solid #0f172a;
   outline-offset: 2px;
 }
 
 .collection-pill--active {
-  background: var(--color-gold, #f59e0b);
-  border-color: var(--color-gold, #f59e0b);
-  color: var(--color-navy, #0f172a);
-  font-weight: 700;
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+
+/* ── Main content wrapper ── */
+.gallery-main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px 48px;
 }
 
 /* ── Asset grid ── */
 .asset-grid {
   display: grid;
-  gap: 1.25rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-  .asset-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .asset-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .asset-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
 }
 
 /* ── Asset card ── */
 .asset-card {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 0.5px solid #e2e8f0;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .asset-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
 .asset-card:focus-visible {
-  outline: 2px solid var(--color-gold, #f59e0b);
+  outline: 2px solid #0f172a;
   outline-offset: 2px;
 }
 
 /* ── Card thumbnail ── */
-.asset-card-thumb {
+.asset-thumb {
   width: 100%;
-  height: 160px;
+  height: 210px;
+  background: #f8fafc;
   overflow: hidden;
-  background: #f1f5f9;
   flex-shrink: 0;
 }
 
@@ -496,7 +567,7 @@ function formatDate(dateStr) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .asset-type-emoji {
@@ -505,25 +576,25 @@ function formatDate(dateStr) {
 }
 
 .asset-type-label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-muted, #94a3b8);
+  letter-spacing: 0.06em;
+  color: #94a3b8;
 }
 
 /* ── Card body ── */
-.asset-card-body {
-  padding: 0.875rem 1rem 1rem;
+.asset-body {
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
   flex: 1;
 }
 
 .asset-title {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: #0f172a;
   margin: 0;
   white-space: nowrap;
@@ -535,143 +606,126 @@ function formatDate(dateStr) {
 .asset-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.375rem;
+  gap: 4px;
 }
 
 .asset-tag {
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 0.15rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 2px 6px;
 }
 
-.asset-view-link {
-  font-size: 0.8125rem;
-  color: var(--color-muted, #94a3b8);
+.asset-date {
+  font-size: 11px;
+  color: #94a3b8;
   margin-top: auto;
 }
 
 /* ── Skeleton loading ── */
-.gallery-loading {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.skeleton-pills {
-  display: flex;
-  gap: 0.625rem;
-}
-
-.skeleton-pill {
-  height: 2rem;
-  width: 6rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
-  animation: pulse 1.4s ease-in-out infinite;
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .skeleton-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  background: #ffffff;
+  border: 0.5px solid #e2e8f0;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .skeleton-thumb {
   width: 100%;
   height: 160px;
-  background: rgba(255, 255, 255, 0.08);
-  animation: pulse 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
 .skeleton-body {
-  padding: 0.875rem 1rem;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .skeleton-line {
-  height: 0.8rem;
+  height: 10px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  animation: pulse 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
-.skeleton-line--title { width: 75%; }
-.skeleton-line--short { width: 50%; }
+.skeleton-line--title { width: 72%; }
+.skeleton-line--short { width: 48%; }
 
-.skeleton-tags {
+.skeleton-tags-row {
   display: flex;
-  gap: 0.375rem;
-  margin-top: 0.25rem;
+  gap: 6px;
+  margin-top: 2px;
 }
 
 .skeleton-tag {
-  height: 1.25rem;
-  width: 3.5rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  height: 18px;
+  width: 52px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
 /* ── Empty states ── */
-.gallery-empty {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 12px;
   min-height: 40vh;
   text-align: center;
+  padding: 48px 24px;
 }
 
-.gallery-empty-title {
-  color: #ffffff;
-  font-size: 1.125rem;
-  font-weight: 600;
+.empty-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #0f172a;
   margin: 0;
 }
 
-.gallery-empty-sub {
-  color: var(--color-muted, #94a3b8);
-  font-size: 0.9rem;
+.empty-sub {
+  font-size: 13px;
+  color: #94a3b8;
   margin: 0;
 }
 
-.assets-empty {
-  color: var(--color-muted, #94a3b8);
+.empty-collection {
+  color: #94a3b8;
+  font-size: 13px;
   text-align: center;
-  padding: 3rem 0;
-  font-size: 0.9375rem;
+  padding: 48px 0;
 }
 
-/* ── Modal ── */
+/* ── Modal overlay ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(15, 23, 42, 0.5);
   z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 24px;
 }
 
+/* ── Modal card ── */
 .modal-card {
   background: #ffffff;
-  border-radius: 12px;
+  border: 0.5px solid #e2e8f0;
+  border-radius: 8px;
   width: 100%;
   max-width: 640px;
   max-height: 90vh;
@@ -679,122 +733,133 @@ function formatDate(dateStr) {
   position: relative;
 }
 
+/* ── Modal close button ── */
 .modal-close {
   position: absolute;
-  top: 0.75rem;
-  right: 0.875rem;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--color-muted, #94a3b8);
-  line-height: 1;
-  transition: color 0.15s ease;
+  top: 12px;
+  right: 12px;
   z-index: 1;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 0.5px solid #e2e8f0;
+  border-radius: 4px;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
 }
 
 .modal-close:hover {
-  color: var(--color-navy, #0f172a);
+  color: #0f172a;
+  border-color: #cbd5e1;
 }
 
-.modal-thumb {
+/* ── Modal media ── */
+.modal-media {
   width: 100%;
-  max-height: 360px;
+  max-height: 320px;
+  background: #f8fafc;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-img {
   width: 100%;
-  height: 100%;
+  max-height: 320px;
   object-fit: contain;
   display: block;
 }
 
-.modal-type-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.modal-media--icon {
   height: 180px;
-  background: #f1f5f9;
 }
 
 .modal-type-emoji {
   font-size: 4rem;
 }
 
+/* ── Modal body ── */
 .modal-body {
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 8px;
 }
 
 .modal-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-navy, #0f172a);
+  font-size: 15px;
+  font-weight: 500;
+  color: #0f172a;
   margin: 0;
 }
 
-.modal-description {
-  color: #374151;
-  font-size: 0.9375rem;
-  margin: 0;
+.modal-desc {
+  font-size: 13px;
+  color: #475569;
   line-height: 1.6;
+  margin: 0;
 }
 
 .modal-meta {
-  font-size: 0.8125rem;
-  color: var(--color-muted, #94a3b8);
+  font-size: 11px;
+  color: #94a3b8;
   margin: 0;
 }
 
-.modal-loading {
+/* ── Modal loading spinner ── */
+.modal-spinner-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 200px;
 }
 
-.spinner {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 3px solid rgba(245, 158, 11, 0.2);
-  border-top-color: var(--color-gold, #f59e0b);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #0f172a;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+
 /* ── Footer ── */
 .gallery-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 1.5rem;
+  border-top: 0.5px solid #e2e8f0;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.footer-tagline {
-  color: var(--color-muted, #94a3b8);
-  font-size: 0.8125rem;
+.footer-copy {
+  font-size: 11px;
+  color: #94a3b8;
   margin: 0;
 }
 
 .footer-github {
-  color: var(--color-gold, #f59e0b);
-  text-decoration: none;
-  font-size: 0.8125rem;
+  font-size: 11px;
+  color: #0f172a;
   font-weight: 500;
-  transition: opacity 0.15s ease;
+  text-decoration: none;
+  transition: opacity 0.12s ease;
 }
 
 .footer-github:hover {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 </style>
