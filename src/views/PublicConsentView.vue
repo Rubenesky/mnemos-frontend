@@ -21,13 +21,19 @@
 
       <!-- Confirmation after responding -->
       <div v-else-if="state === 'done'" class="consent-state consent-state--done">
-        <div class="state-icon state-icon--success">&#10003;</div>
-        <h2 class="state-title">Respuesta registrada</h2>
-        <p class="state-text">
-          {{ responseStatus === 'obtained'
-            ? 'Has dado tu consentimiento. Gracias.'
-            : 'Has rechazado el consentimiento. Tu respuesta ha sido guardada.' }}
-        </p>
+        <div class="state-icon" :class="responseStatus === 'obtained' ? 'state-icon--success' : 'state-icon--denied'">
+          {{ responseStatus === 'obtained' ? '✓' : '✗' }}
+        </div>
+        <h2 class="state-title">Tu respuesta ha sido registrada</h2>
+        <p class="state-text">Puedes cerrar esta ventana.</p>
+      </div>
+
+      <!-- Network / server error -->
+      <div v-else-if="state === 'error'" class="consent-state consent-state--error">
+        <div class="state-icon">&#10007;</div>
+        <h2 class="state-title">Ha ocurrido un error</h2>
+        <p class="state-text">Por favor inténtalo de nuevo o contacta con la organización.</p>
+        <button class="btn-retry" @click="state = 'ready'">Reintentar</button>
       </div>
 
       <!-- Consent form -->
@@ -65,7 +71,7 @@
 
         <div class="consent-actions">
           <button class="btn-deny" :disabled="responding" @click="respond('denied')">
-            No acepto
+            {{ responding ? 'Guardando...' : 'No acepto' }}
           </button>
           <button class="btn-accept" :disabled="responding" @click="respond('obtained')">
             {{ responding ? 'Guardando...' : 'Acepto' }}
@@ -104,11 +110,11 @@ onMounted(async () => {
 async function respond(status) {
   responding.value = true
   try {
-    await axios.post(`${apiBase}/public/consents/${token}`, { status })
+    await axios.post(`${apiBase}/public/consents/${token}`, { status }, { timeout: 10000 })
     responseStatus.value = status
     state.value = 'done'
   } catch {
-    state.value = 'invalid'
+    state.value = 'error'
   } finally {
     responding.value = false
   }
@@ -190,6 +196,28 @@ function formatDate(dateStr) {
 
 .state-icon--success {
   color: #166534;
+}
+
+.state-icon--denied {
+  color: #991b1b;
+}
+
+.btn-retry {
+  margin-top: 16px;
+  height: 38px;
+  padding: 0 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+.btn-retry:hover {
+  background: #f1f5f9;
 }
 
 .state-title {

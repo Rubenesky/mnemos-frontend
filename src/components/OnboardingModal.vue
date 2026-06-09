@@ -12,8 +12,8 @@
 
       <!-- ── STEP 1 ── -->
       <div v-if="step === 1" class="ob-step">
-        <div class="ob-logo-mark" aria-hidden="true">
-          <span class="ob-logo-m">M</span>
+        <div class="ob-logo-wrap" aria-hidden="true">
+          <MnemosLogo />
         </div>
         <h1 id="ob-title" class="ob-title">Bienvenido a Mnemos</h1>
         <p class="ob-body">
@@ -93,6 +93,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import MnemosLogo from '@/components/MnemosLogo.vue'
 
 const emit = defineEmits(['done'])
 
@@ -192,25 +193,9 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
   text-align: center;
 }
 
-/* ── Step 1 logo mark ── */
-.ob-logo-mark {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ── Step 1 logo ── */
+.ob-logo-wrap {
   margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
-}
-.ob-logo-m {
-  font-size: 38px;
-  font-weight: 700;
-  color: #f59e0b;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-family: Georgia, serif;
 }
 
 /* ── Step 3 checkmark ── */
