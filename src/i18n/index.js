@@ -520,6 +520,7 @@ const messages = {
       notFound: 'The requested resource does not exist.',
       invalidData: 'Invalid data. Please review the form.',
       serverError: 'Server error. Please try again later.',
+      consentRequired: 'This asset has unresolved consents. Resolve them in the GDPR panel before publishing.',
     },
     asset_type: {
       image: 'Image',
@@ -1057,6 +1058,7 @@ const messages = {
       notFound: 'El recurso solicitado no existe.',
       invalidData: 'Datos inválidos. Por favor revisa el formulario.',
       serverError: 'Error del servidor. Inténtalo más tarde.',
+      consentRequired: 'Este recurso tiene consentimientos sin resolver. Resuélvelos en el panel RGPD antes de publicar.',
     },
     asset_type: {
       image: 'Imagen',

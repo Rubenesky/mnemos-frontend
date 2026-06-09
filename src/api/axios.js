@@ -44,8 +44,10 @@ api.interceptors.response.use(
     } else if (error.response.status === 404) {
       toast.error(t('api.notFound'))
     } else if (error.response.status === 422) {
-      const errors = error.response.data.errors
-      if (errors) {
+      const { errors, error: errCode } = error.response.data
+      if (errCode === 'consent_required') {
+        toast.error(t('api.consentRequired'))
+      } else if (errors) {
         const firstError = Object.values(errors)[0][0]
         toast.error(firstError)
       } else {
