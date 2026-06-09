@@ -18,13 +18,22 @@
       <h1 class="hero-title">{{ orgName }}</h1>
       <p class="hero-subtitle">{{ t('gallery.tagline') }}</p>
 
-      <!-- Collection pills (only when >1 collection and not loading) -->
+      <!-- Collection pills — optional filter tabs, shown only when >1 collection exists -->
       <div
         v-if="!loadingCollections && collections.length > 1"
         class="collection-pills"
         role="tablist"
         aria-label="Collections"
       >
+        <button
+          class="collection-pill"
+          :class="{ 'collection-pill--active': !selectedCollection }"
+          @click="clearCollection"
+          role="tab"
+          :aria-selected="!selectedCollection"
+        >
+          {{ t('gallery.allCollections') }}
+        </button>
         <button
           v-for="col in collections"
           :key="col.id"
@@ -42,8 +51,8 @@
     <!-- Main content -->
     <main class="gallery-main">
 
-      <!-- Loading collections -->
-      <div v-if="loadingCollections" class="asset-grid">
+      <!-- Loading assets skeleton -->
+      <div v-if="loadingAssets" class="asset-grid">
         <div class="skeleton-card" v-for="n in 8" :key="n">
           <div class="skeleton-thumb"></div>
           <div class="skeleton-body">
@@ -57,75 +66,52 @@
         </div>
       </div>
 
-      <!-- Empty state — no collections -->
-      <div v-else-if="collections.length === 0" class="empty-state">
+      <!-- Empty state — no public assets -->
+      <div v-else-if="assets.length === 0" class="empty-state">
         <MnemosLogo />
-        <p class="empty-title">{{ t('gallery.noCollections') }}</p>
-        <p class="empty-sub">{{ t('gallery.noCollectionsSub') }}</p>
+        <p class="empty-title">{{ t('gallery.noAssets') }}</p>
+        <p class="empty-sub">{{ t('gallery.noAssetsSub') }}</p>
       </div>
 
-      <template v-else>
-
-        <!-- Loading assets -->
-        <div v-if="loadingAssets" class="asset-grid">
-          <div class="skeleton-card" v-for="n in 8" :key="n">
-            <div class="skeleton-thumb"></div>
-            <div class="skeleton-body">
-              <div class="skeleton-line skeleton-line--title"></div>
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-tags-row">
-                <div class="skeleton-tag"></div>
-                <div class="skeleton-tag"></div>
-              </div>
+      <!-- Asset grid -->
+      <div v-else class="asset-grid">
+        <article
+          v-for="asset in assets"
+          :key="asset.id"
+          class="asset-card"
+          role="button"
+          tabindex="0"
+          @click="openAsset(asset)"
+          @keydown.enter="openAsset(asset)"
+        >
+          <div class="asset-thumb">
+            <img
+              v-if="isImage(asset)"
+              :src="asset.cloudinary_url"
+              :alt="getTitle(asset)"
+              class="asset-thumb-img"
+              loading="lazy"
+            />
+            <div v-else class="asset-type-icon">
+              <span class="asset-type-emoji">{{ getTypeIcon(asset) }}</span>
+              <span class="asset-type-label">{{ getMimeLabel(asset) }}</span>
             </div>
           </div>
-        </div>
 
-        <!-- Empty collection -->
-        <div v-else-if="assets.length === 0" class="empty-collection">
-          <p>{{ t('gallery.noAssets') }}</p>
-        </div>
-
-        <!-- Asset grid -->
-        <div v-else class="asset-grid">
-          <article
-            v-for="asset in assets"
-            :key="asset.id"
-            class="asset-card"
-            role="button"
-            tabindex="0"
-            @click="openAsset(asset)"
-            @keydown.enter="openAsset(asset)"
-          >
-            <div class="asset-thumb">
-              <img
-                v-if="isImage(asset)"
-                :src="asset.cloudinary_url"
-                :alt="getTitle(asset)"
-                class="asset-thumb-img"
-                loading="lazy"
-              />
-              <div v-else class="asset-type-icon">
-                <span class="asset-type-emoji">{{ getTypeIcon(asset) }}</span>
-                <span class="asset-type-label">{{ getMimeLabel(asset) }}</span>
-              </div>
+          <div class="asset-body">
+            <h3 class="asset-title">{{ getTitle(asset) }}</h3>
+            <div v-if="getTags(asset).length" class="asset-tags">
+              <span
+                v-for="tag in getTags(asset)"
+                :key="tag"
+                class="asset-tag"
+              >{{ tag }}</span>
             </div>
+            <span class="asset-date">{{ formatDate(asset.created_at) }}</span>
+          </div>
+        </article>
+      </div>
 
-            <div class="asset-body">
-              <h3 class="asset-title">{{ getTitle(asset) }}</h3>
-              <div v-if="getTags(asset).length" class="asset-tags">
-                <span
-                  v-for="tag in getTags(asset)"
-                  :key="tag"
-                  class="asset-tag"
-                >{{ tag }}</span>
-              </div>
-              <span class="asset-date">{{ formatDate(asset.created_at) }}</span>
-            </div>
-          </article>
-        </div>
-
-      </template>
     </main>
 
     <!-- Embed widget panel — admin/editor only, when a collection is active -->
@@ -211,74 +197,82 @@ const auth = useAuthStore()
 // Public axios instance — no auth token attached
 const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 })
 
 // State
-const collections = ref([])
+const collections        = ref([])
 const selectedCollection = ref(null)
-const assets = ref([])
-const loadingCollections = ref(true)
-const loadingAssets = ref(false)
-const activeAsset = ref(null)
-const loadingDetail = ref(false)
+const assets             = ref([])
+const loadingAssets      = ref(true)
+const loadingCollections = ref(false)
+const activeAsset        = ref(null)
+const loadingDetail      = ref(false)
 const pressRoomAvailable = ref(false)
+const orgName            = ref('Mnemos')
+const currentPage        = ref(1)
+const lastPage           = ref(1)
+const totalAssets        = ref(0)
 
-const orgName = ref('Mnemos')
-
-onMounted(async () => {
-  await fetchCollections()
-  try {
-    const { data } = await publicApi.get('/public/press-room')
-    pressRoomAvailable.value = (data.data?.length ?? 0) > 0
-  } catch {
-    // silent — link simply won't appear
-  }
+onMounted(() => {
+  Promise.all([fetchAssets(), fetchCollections(), checkPressRoom()])
 })
+
+async function fetchAssets(page = 1, collectionSlug = null) {
+  loadingAssets.value = true
+  try {
+    const params = { page }
+    if (collectionSlug) params.collection = collectionSlug
+
+    const { data } = await publicApi.get('/public/assets', { params })
+    orgName.value     = data.org_name ?? 'Mnemos'
+    assets.value      = data.data ?? []
+    currentPage.value = data.current_page ?? 1
+    lastPage.value    = data.last_page    ?? 1
+    totalAssets.value = data.total        ?? 0
+  } catch {
+    toast.error(t('gallery.loadError'))
+    assets.value = []
+  } finally {
+    loadingAssets.value = false
+  }
+}
 
 async function fetchCollections() {
   loadingCollections.value = true
   try {
     const { data } = await publicApi.get('/public/collections')
     collections.value = Array.isArray(data) ? data : (data.data ?? [])
-    orgName.value = data.org_name ?? 'Mnemos'
-    if (collections.value.length > 0) {
-      await selectCollection(collections.value[0])
-    }
   } catch {
-    toast.error(t('gallery.loadError'))
     collections.value = []
   } finally {
     loadingCollections.value = false
   }
 }
 
+async function checkPressRoom() {
+  try {
+    const { data } = await publicApi.get('/public/press-room')
+    pressRoomAvailable.value = (data.data?.length ?? 0) > 0
+  } catch {
+    // silent — link simply won't appear
+  }
+}
+
 async function selectCollection(col) {
   selectedCollection.value = col
-  loadingAssets.value = true
-  try {
-    const slug = col.slug ?? col.id
-    const { data } = await publicApi.get(`/public/collections/${slug}`)
-    if (Array.isArray(data)) {
-      assets.value = data
-    } else if (data.assets?.data && Array.isArray(data.assets.data)) {
-      assets.value = data.assets.data
-    } else if (Array.isArray(data.assets)) {
-      assets.value = data.assets
-    } else if (Array.isArray(data.data)) {
-      assets.value = data.data
-    } else {
-      assets.value = []
-    }
-  } catch {
-    toast.error(t('gallery.loadCollectionError'))
-    assets.value = []
-  } finally {
-    loadingAssets.value = false
-  }
+  await fetchAssets(1, col.slug)
+}
+
+async function clearCollection() {
+  selectedCollection.value = null
+  await fetchAssets(1)
+}
+
+async function goToPage(page) {
+  if (page < 1 || page > lastPage.value) return
+  await fetchAssets(page, selectedCollection.value?.slug)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 async function openAsset(asset) {
@@ -288,20 +282,17 @@ async function openAsset(asset) {
     const { data } = await publicApi.get(`/public/assets/${asset.id}`)
     activeAsset.value = data.data ?? data
   } catch {
-    toast.error(t('gallery.loadDetailError'))
-    // keep the data we already have from the list
+    // keep data from list on detail load failure
   } finally {
     loadingDetail.value = false
   }
 }
 
-function closeAsset() {
-  activeAsset.value = null
-}
+function closeAsset() { activeAsset.value = null }
 
-function isImage(asset) {
-  return asset?.mime_type?.startsWith('image/')
-}
+function isImage(asset)  { return asset?.mime_type?.startsWith('image/') }
+function getTitle(asset) { return asset?.metadata?.title || asset?.original_name || 'Untitled' }
+function getTags(asset)  { const tg = asset?.metadata?.tags ?? []; return Array.isArray(tg) ? tg.slice(0, 3) : [] }
 
 function getTypeIcon(asset) {
   const mime = asset?.mime_type ?? ''
@@ -319,25 +310,10 @@ function getMimeLabel(asset) {
   return 'File'
 }
 
-function getTitle(asset) {
-  return asset?.metadata?.title || asset?.title || asset?.original_name || 'Untitled'
-}
-
-function getTags(asset) {
-  const tags = asset?.metadata?.tags ?? asset?.tags ?? []
-  return Array.isArray(tags) ? tags.slice(0, 3) : []
-}
-
 function formatDate(dateStr) {
   try {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-  } catch {
-    return dateStr
-  }
+    return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  } catch { return dateStr }
 }
 </script>
 
