@@ -221,6 +221,53 @@
         </ul>
       </div>
 
+      <!-- Collections (admin / editor only) -->
+      <div
+        v-if="auth.isAdmin || auth.isEditor"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow p-6"
+      >
+        <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-4">{{ t('collections.title') }}</h2>
+
+        <!-- Current collections this asset belongs to -->
+        <div v-if="!assetCollections.length" class="text-sm text-gray-400 mb-4">
+          {{ t('collections.noCollectionsForAsset') }}
+        </div>
+        <ul v-else class="flex flex-wrap gap-2 mb-4">
+          <li
+            v-for="col in assetCollections"
+            :key="col.id"
+            class="flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 text-xs px-3 py-1 rounded-full"
+          >
+            {{ col.name }}
+            <button
+              @click="removeFromCollection(col.id)"
+              class="ml-1 text-amber-600 hover:text-amber-900 font-bold leading-none"
+              :title="t('collections.removeAsset')"
+            >×</button>
+          </li>
+        </ul>
+
+        <!-- Add to collection selector -->
+        <div class="flex gap-2 flex-wrap">
+          <select
+            v-model="selectedCollectionId"
+            class="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 flex-1 min-w-0"
+          >
+            <option value="">{{ t('collections.selectCollection') }}</option>
+            <option v-for="col in availableCollections" :key="col.id" :value="col.id">
+              {{ col.name }}
+            </option>
+          </select>
+          <button
+            @click="addToCollection"
+            :disabled="!selectedCollectionId || collectionActionLoading"
+            class="bg-amber-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-amber-600 disabled:opacity-50 transition whitespace-nowrap"
+          >
+            {{ t('collections.addAsset') }}
+          </button>
+        </div>
+      </div>
+
       <!-- AI variant generator -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div class="flex justify-between items-center mb-4">
@@ -311,7 +358,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
@@ -335,6 +382,16 @@ const consentsLoading = ref(false)
 const publishLoading = ref(false)
 const pressKitLoading = ref(false)
 const emergencyKitLoading = ref(false)
+
+// Collections
+const assetCollections       = ref([])
+const allCollections         = ref([])
+const selectedCollectionId   = ref('')
+const collectionActionLoading = ref(false)
+
+const availableCollections = computed(() =>
+  allCollections.value.filter(c => !assetCollections.value.some(ac => ac.id === c.id))
+)
 
 function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-GB', {
@@ -456,6 +513,47 @@ async function applyTag(tag) {
   }
 }
 
+async function fetchAllCollections() {
+  if (!auth.isAdmin && !auth.isEditor) return
+  try {
+    const { data } = await api.get('/collections')
+    allCollections.value = data.data ?? []
+  } catch {
+    // Non-critical — dropdown will be empty
+  }
+}
+
+async function addToCollection() {
+  if (!selectedCollectionId.value) return
+  collectionActionLoading.value = true
+  try {
+    await api.post(`/collections/${selectedCollectionId.value}/assets`, {
+      asset_id: Number(route.params.id),
+    })
+    const col = allCollections.value.find(c => c.id === selectedCollectionId.value)
+    if (col) assetCollections.value.push(col)
+    selectedCollectionId.value = ''
+    toast.success(t('collections.addSuccess'))
+  } catch {
+    toast.error(t('collections.saveError'))
+  } finally {
+    collectionActionLoading.value = false
+  }
+}
+
+async function removeFromCollection(collectionId) {
+  collectionActionLoading.value = true
+  try {
+    await api.delete(`/collections/${collectionId}/assets/${route.params.id}`)
+    assetCollections.value = assetCollections.value.filter(c => c.id !== collectionId)
+    toast.success(t('collections.removeSuccess'))
+  } catch {
+    toast.error(t('collections.saveError'))
+  } finally {
+    collectionActionLoading.value = false
+  }
+}
+
 async function fetchAssetConsents(assetId) {
   if (!auth.isAdmin && !auth.isEditor) return
   consentsLoading.value = true
@@ -473,7 +571,11 @@ onMounted(async () => {
   try {
     const response = await api.get(`/assets/${route.params.id}`)
     asset.value = response.data.data
-    await fetchAssetConsents(route.params.id)
+    assetCollections.value = asset.value.categories ?? []
+    await Promise.all([
+      fetchAssetConsents(route.params.id),
+      fetchAllCollections(),
+    ])
   } catch (e) {
     // error handled by axios interceptor
   } finally {
