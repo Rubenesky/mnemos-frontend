@@ -65,6 +65,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/assets/bulk-upload',
+      name: 'asset-bulk-upload',
+      component: () => import('../views/BulkUploadView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'editor' },
+    },
+    {
       path: '/assets/:id/edit',
       name: 'asset-edit',
       component: () => import('../views/AssetEditView.vue'),

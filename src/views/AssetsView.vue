@@ -20,6 +20,9 @@
             {{ t('assets.activeFilters', { count: activeFilterCount }) }}
           </span>
         </button>
+        <RouterLink to="/assets/bulk-upload" class="btn-secondary">
+          {{ t('bulk.title') }}
+        </RouterLink>
         <RouterLink to="/assets/upload" class="btn-primary">
           + {{ t('assets.upload') }}
         </RouterLink>
