@@ -43,8 +43,8 @@
         class="collection-card"
         role="button"
         tabindex="0"
-        @click="router.push(`/collections/${col.id}`)"
-        @keydown.enter="router.push(`/collections/${col.id}`)"
+        @click="navigateTo(col.id)"
+        @keydown.enter="navigateTo(col.id)"
       >
         <!-- Public / private badge + action buttons -->
         <div class="card-top">
@@ -261,6 +261,10 @@ async function toggleVisibility(col) {
 }
 
 // ── Modal helpers ──────────────────────────────────────────────────────────
+function navigateTo(id) {
+  router.push(`/collections/${id}`)
+}
+
 function openCreateModal() {
   editingCollection.value = null
   form.value = { name: '', description: '', is_public: false }
@@ -324,11 +328,14 @@ function confirmDelete(col) {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: box-shadow 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .collection-card:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
 }
 
 .card-top {
