@@ -195,6 +195,7 @@ function addFiles(newFiles) {
     if (file.type.startsWith('image/')) {
       const reader = new FileReader()
       reader.onload = e => { item.preview = e.target.result }
+      reader.onerror = () => { item.preview = null }
       reader.readAsDataURL(file)
     }
     files.value.push(item)

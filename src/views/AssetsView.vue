@@ -20,7 +20,7 @@
             {{ t('assets.activeFilters', { count: activeFilterCount }) }}
           </span>
         </button>
-        <RouterLink to="/assets/bulk-upload" class="btn-secondary">
+        <RouterLink to="/assets/bulk-upload" class="btn-navy">
           {{ t('bulk.title') }}
         </RouterLink>
         <RouterLink to="/assets/upload" class="btn-primary">
@@ -593,6 +593,23 @@ onMounted(() => {
 }
 
 .btn-primary:hover { background: #1e293b; }
+
+.btn-navy {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.btn-navy:hover { opacity: 0.85; }
 
 /* ── Filter panel ────────────────────────────────────────────────────────────── */
 .filter-panel {
