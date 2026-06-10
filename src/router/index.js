@@ -171,6 +171,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresRole: 'admin' },
     },
     {
+      path: '/admin/gdpr',
+      name: 'admin-gdpr',
+      component: () => import('@/views/AdminGdprView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),

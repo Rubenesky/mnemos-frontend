@@ -4,6 +4,7 @@
     <RouterLink to="/admin/settings"   class="subnav-item" :class="{ active: route.path.startsWith('/admin/settings') }">{{ t('admin.nav.settings') }}</RouterLink>
     <RouterLink to="/admin/system"     class="subnav-item" :class="{ active: route.path.startsWith('/admin/system') }">{{ t('admin.nav.system') }}</RouterLink>
     <RouterLink to="/admin/volunteers" class="subnav-item" :class="{ active: route.path.startsWith('/admin/volunteers') }">{{ t('admin.nav.volunteers') }}</RouterLink>
+    <RouterLink to="/admin/gdpr"       class="subnav-item" :class="{ active: route.path.startsWith('/admin/gdpr') }">{{ t('admin.nav.gdpr') }}</RouterLink>
   </nav>
 </template>
 

@@ -241,6 +241,7 @@ const messages = {
         settings: 'Organization',
         system: 'System',
         volunteers: 'Volunteers',
+        gdpr: 'GDPR Intelligence',
       },
       settings: {
         title: 'Organization Settings',
@@ -303,6 +304,32 @@ const messages = {
           never: 'No expiry',
           expired: 'Expired',
           days: '{n} days',
+        },
+      },
+      gdpr: {
+        title: 'GDPR Intelligence Panel',
+        subtitle: 'Monitor consent compliance risk in real time.',
+        loading: 'Loading GDPR data…',
+        autoRefresh: 'Auto-refresh: 60s',
+        refreshNow: 'Refresh now',
+        lastChecked: 'Last updated',
+        exportCsv: 'Export audit CSV',
+        goToConsents: 'Go to GDPR panel',
+        riskLevel: {
+          label: 'Risk level',
+          low: 'Low risk',
+          medium: 'Medium risk',
+          high: 'High risk',
+        },
+        kpi: {
+          pending: 'Pending consents',
+          accepted: 'Accepted',
+          rejected: 'Rejected',
+          blocked: 'Blocked assets',
+        },
+        alerts: {
+          title: 'Actionable alerts',
+          none: '✓ Everything is in order',
         },
       },
       users: {
@@ -847,6 +874,7 @@ const messages = {
         settings: 'Organización',
         system: 'Sistema',
         volunteers: 'Voluntarios',
+        gdpr: 'RGPD Inteligente',
       },
       settings: {
         title: 'Configuración de la organización',
@@ -909,6 +937,32 @@ const messages = {
           never: 'Sin vencimiento',
           expired: 'Expirado',
           days: '{n} días',
+        },
+      },
+      gdpr: {
+        title: 'Panel RGPD Inteligente',
+        subtitle: 'Monitoriza el riesgo de cumplimiento de consentimientos en tiempo real.',
+        loading: 'Cargando datos RGPD…',
+        autoRefresh: 'Actualización automática: 60s',
+        refreshNow: 'Actualizar ahora',
+        lastChecked: 'Última actualización',
+        exportCsv: 'Exportar auditoría CSV',
+        goToConsents: 'Ir al panel RGPD',
+        riskLevel: {
+          label: 'Nivel de riesgo',
+          low: 'Riesgo bajo',
+          medium: 'Riesgo medio',
+          high: 'Riesgo alto',
+        },
+        kpi: {
+          pending: 'Consentimientos pendientes',
+          accepted: 'Consentimientos obtenidos',
+          rejected: 'Consentimientos denegados',
+          blocked: 'Assets bloqueados',
+        },
+        alerts: {
+          title: 'Alertas accionables',
+          none: '✓ Todo en orden',
         },
       },
       users: {
