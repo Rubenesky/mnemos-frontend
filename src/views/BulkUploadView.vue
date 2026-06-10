@@ -15,7 +15,7 @@
       <div
         class="drop-zone"
         :class="{ 'drop-zone--active': isDragging }"
-        @click="!uploadDone && fileInput.click()"
+        @click="!isUploading && fileInput.click()"
         @dragover.prevent="isDragging = true"
         @dragleave.prevent="isDragging = false"
         @drop.prevent="handleDrop"
@@ -50,11 +50,6 @@
         <span class="progress-label">{{ globalProgress }}%</span>
       </div>
 
-      <!-- Result message -->
-      <div v-if="resultMessage" class="result-message" :class="resultMessageClass">
-        {{ resultMessage }}
-      </div>
-
       <!-- File grid -->
       <div v-if="files.length > 0" class="file-grid">
         <div
@@ -79,28 +74,29 @@
             <p class="file-name" :title="item.file.name">{{ item.file.name }}</p>
             <p class="file-size">{{ formatSize(item.file.size) }}</p>
             <p class="file-status" :class="statusClass(item.status)">
-              {{ t('bulk.status' + capitalize(item.status)) }}
+              {{ statusLabel(item) }}
             </p>
           </div>
 
-          <!-- Remove button (only before upload) -->
+          <!-- Remove button (pending only, not during upload) -->
           <button
             v-if="item.status === 'pending' && !isUploading"
             class="file-remove"
-            title="Eliminar"
+            :title="t('bulk.removeFile')"
             @click.stop="removeFile(index)"
           >
             ✕
           </button>
 
-          <!-- Status icon (after upload) -->
-          <span v-else-if="item.status === 'success'" class="status-icon status-icon--success">✓</span>
-          <span v-else-if="item.status === 'error'" class="status-icon status-icon--error">✕</span>
+          <!-- Status icons after upload -->
+          <span v-else-if="item.status === 'success'"   class="status-icon status-icon--success">✓</span>
+          <span v-else-if="item.status === 'duplicate'" class="status-icon status-icon--duplicate">⚠</span>
+          <span v-else-if="item.status === 'error'"     class="status-icon status-icon--error">✕</span>
           <span v-else-if="item.status === 'uploading'" class="status-icon status-icon--uploading">⏳</span>
         </div>
       </div>
 
-      <!-- Actions -->
+      <!-- Actions (pre-upload) -->
       <div v-if="files.length > 0 && !uploadDone" class="bulk-actions">
         <button
           class="btn-clear"
@@ -118,11 +114,28 @@
         </button>
       </div>
 
-      <!-- Post-upload link -->
-      <div v-if="uploadDone" class="post-upload">
-        <RouterLink to="/assets" class="btn-view-assets">
-          {{ t('bulk.viewUploaded') }} →
-        </RouterLink>
+      <!-- Post-upload summary -->
+      <div v-if="uploadDone" class="summary-panel">
+        <div v-if="summary.success > 0" class="summary-row summary-row--success">
+          <span class="summary-icon">✓</span>
+          {{ t('bulk.summarySuccess', summary.success) }}
+        </div>
+        <div v-if="summary.duplicates > 0" class="summary-row summary-row--duplicate">
+          <span class="summary-icon">⚠</span>
+          {{ t('bulk.summaryDuplicates', summary.duplicates) }}
+        </div>
+        <div v-if="summary.errors > 0" class="summary-row summary-row--error">
+          <span class="summary-icon">✕</span>
+          {{ t('bulk.summaryErrors', summary.errors) }}
+        </div>
+        <div class="summary-actions">
+          <button class="btn-upload-more" @click="uploadMore">
+            {{ t('bulk.uploadMore') }}
+          </button>
+          <RouterLink to="/assets" class="btn-view-assets">
+            {{ t('bulk.viewUploaded') }} →
+          </RouterLink>
+        </div>
       </div>
     </div>
   </AppLayout>
@@ -143,8 +156,6 @@ const fileInput = ref(null)
 const isDragging = ref(false)
 const isUploading = ref(false)
 const uploadDone = ref(false)
-const resultMessage = ref('')
-const resultMessageClass = ref('')
 
 const MAX_FILES = 20
 const MAX_SIZE_BYTES = 10 * 1024 * 1024
@@ -157,14 +168,20 @@ const ALLOWED_TYPES = [
   'audio/mpeg', 'audio/wav',
 ]
 
-// Each item: { file, preview, status: 'pending'|'uploading'|'success'|'error' }
+// Each item: { file, preview, status: 'pending'|'uploading'|'success'|'error'|'duplicate', errorMsg }
 const files = ref([])
 
 const globalProgress = computed(() => {
   if (files.value.length === 0) return 0
-  const done = files.value.filter(f => f.status === 'success' || f.status === 'error').length
+  const done = files.value.filter(f => ['success', 'error', 'duplicate'].includes(f.status)).length
   return Math.round((done / files.value.length) * 100)
 })
+
+const summary = computed(() => ({
+  success:    files.value.filter(f => f.status === 'success').length,
+  duplicates: files.value.filter(f => f.status === 'duplicate').length,
+  errors:     files.value.filter(f => f.status === 'error').length,
+}))
 
 function handleFileChange(event) {
   addFiles(Array.from(event.target.files))
@@ -191,7 +208,7 @@ function addFiles(newFiles) {
     if (!ALLOWED_TYPES.includes(file.type)) continue
     if (file.size > MAX_SIZE_BYTES) continue
 
-    const item = { file, preview: null, status: 'pending' }
+    const item = { file, preview: null, status: 'pending', errorMsg: '' }
     if (file.type.startsWith('image/')) {
       const reader = new FileReader()
       reader.onload = e => { item.preview = e.target.result }
@@ -208,14 +225,16 @@ function removeFile(index) {
 
 function clearAll() {
   files.value = []
-  resultMessage.value = ''
   uploadDone.value = false
+}
+
+function uploadMore() {
+  clearAll()
 }
 
 async function uploadAll() {
   if (files.value.length === 0) return
   isUploading.value = true
-  resultMessage.value = ''
 
   const formData = new FormData()
   for (const item of files.value) {
@@ -228,42 +247,61 @@ async function uploadAll() {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
-    const results = response.data.data ?? []
+    // Backend returns { results: [...] } — not { data: [...] }
+    const results = response.data.results ?? []
 
     files.value.forEach((item, i) => {
       const r = results[i]
-      item.status = r?.success ? 'success' : 'error'
+      if (!r || r.status === 'success') {
+        item.status = r ? 'success' : 'error'
+        item.errorMsg = ''
+      } else {
+        const err = (r.error ?? '').toLowerCase()
+        if (err.includes('duplicate') || err.includes('already uploaded')) {
+          item.status = 'duplicate'
+          item.errorMsg = t('bulk.errorDuplicate')
+        } else if (err.includes('failed to upload')) {
+          item.status = 'error'
+          item.errorMsg = t('bulk.errorFailedUpload')
+        } else {
+          item.status = 'error'
+          item.errorMsg = r.error || t('bulk.statusError')
+        }
+      }
     })
 
-    const successCount = files.value.filter(f => f.status === 'success').length
-    const errorCount = files.value.filter(f => f.status === 'error').length
+    const successCount   = files.value.filter(f => f.status === 'success').length
+    const duplicateCount = files.value.filter(f => f.status === 'duplicate').length
+    const errorCount     = files.value.filter(f => f.status === 'error').length
 
-    if (errorCount === 0) {
-      resultMessage.value = t('bulk.allDone')
-      resultMessageClass.value = 'result-message--success'
+    if (errorCount === 0 && duplicateCount === 0) {
       toast.success(t('bulk.allDone'))
-    } else if (successCount > 0) {
-      resultMessage.value = t('bulk.partialError')
-      resultMessageClass.value = 'result-message--warning'
+    } else if (errorCount > 0) {
       toast.error(t('bulk.partialError'))
-    } else {
-      resultMessage.value = t('bulk.overallError')
-      resultMessageClass.value = 'result-message--error'
-      toast.error(t('bulk.overallError'))
+    } else if (successCount === 0 && duplicateCount > 0) {
+      toast.success(t('bulk.allDone'))
     }
 
     uploadDone.value = true
   } catch {
     files.value.forEach(item => {
-      if (item.status === 'uploading') item.status = 'error'
+      if (item.status === 'uploading') {
+        item.status = 'error'
+        item.errorMsg = t('bulk.errorFailedUpload')
+      }
     })
-    resultMessage.value = t('bulk.overallError')
-    resultMessageClass.value = 'result-message--error'
     toast.error(t('bulk.overallError'))
     uploadDone.value = true
   } finally {
     isUploading.value = false
   }
+}
+
+function statusLabel(item) {
+  if ((item.status === 'error' || item.status === 'duplicate') && item.errorMsg) {
+    return item.errorMsg
+  }
+  return t('bulk.status' + capitalize(item.status))
 }
 
 function formatSize(bytes) {
@@ -286,17 +324,19 @@ function capitalize(str) {
 
 function fileCardClass(status) {
   return {
-    'file-card--success': status === 'success',
-    'file-card--error': status === 'error',
+    'file-card--success':   status === 'success',
+    'file-card--duplicate': status === 'duplicate',
+    'file-card--error':     status === 'error',
     'file-card--uploading': status === 'uploading',
   }
 }
 
 function statusClass(status) {
   return {
-    'text-green-600': status === 'success',
-    'text-red-500': status === 'error',
-    'text-gray-400': status === 'uploading' || status === 'pending',
+    'text-green-600':  status === 'success',
+    'text-orange-500': status === 'duplicate',
+    'text-red-500':    status === 'error',
+    'text-gray-400':   status === 'uploading' || status === 'pending',
   }
 }
 </script>
@@ -381,17 +421,6 @@ function statusClass(status) {
 }
 .progress-label { font-size: 0.75rem; color: #64748b; min-width: 2.5rem; text-align: right; }
 
-.result-message {
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin: 0.5rem 0;
-}
-.result-message--success { background: #dcfce7; color: #166534; }
-.result-message--warning { background: #fef9c3; color: #854d0e; }
-.result-message--error { background: #fee2e2; color: #991b1b; }
-
 .file-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -410,8 +439,9 @@ function statusClass(status) {
   position: relative;
   transition: border-color 0.15s;
 }
-.file-card--success { border-color: #86efac; background: #f0fdf4; }
-.file-card--error   { border-color: #fca5a5; background: #fef2f2; }
+.file-card--success   { border-color: #86efac; background: #f0fdf4; }
+.file-card--duplicate { border-color: #fed7aa; background: #fff7ed; }
+.file-card--error     { border-color: #fca5a5; background: #fef2f2; }
 .file-card--uploading { border-color: #cbd5e1; background: #f8fafc; opacity: 0.8; }
 
 .file-thumb {
@@ -458,8 +488,9 @@ function statusClass(status) {
   font-size: 1rem;
   font-weight: 700;
 }
-.status-icon--success { color: #16a34a; }
-.status-icon--error   { color: #dc2626; }
+.status-icon--success   { color: #16a34a; }
+.status-icon--duplicate { color: #ea580c; }
+.status-icon--error     { color: #dc2626; }
 .status-icon--uploading { color: #94a3b8; }
 
 .bulk-actions {
@@ -496,23 +527,63 @@ function statusClass(status) {
 .btn-upload:hover:not(:disabled) { background: #d97706; }
 .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.post-upload {
-  display: flex;
-  justify-content: center;
-  margin-top: 1.5rem;
+/* Post-upload summary panel */
+.summary-panel {
+  margin-top: 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
 }
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-row--success   { background: #f0fdf4; color: #166534; }
+.summary-row--duplicate { background: #fff7ed; color: #9a3412; }
+.summary-row--error     { background: #fef2f2; color: #991b1b; }
+
+.summary-icon { font-size: 1rem; }
+
+.summary-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 0.875rem 1rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-upload-more {
+  background: none;
+  border: 1px solid #0f172a;
+  color: #0f172a;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-upload-more:hover { background: #f1f5f9; }
 
 .btn-view-assets {
   background: #0f172a;
   color: #fff;
-  padding: 0.6rem 1.75rem;
+  padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: background 0.15s;
+  transition: opacity 0.15s;
 }
-.btn-view-assets:hover { background: #1e293b; }
+.btn-view-assets:hover { opacity: 0.85; }
 
 .hidden { display: none; }
 </style>

@@ -23,7 +23,8 @@ const messages = {
     },
     collections: {
       title: 'Collections',
-      subtitle: 'Group your assets into collections for the public gallery and internal organisation.',
+      subtitle:
+        'Group your assets into collections for the public gallery and internal organisation.',
       new: 'New collection',
       edit: 'Edit collection',
       delete: 'Delete collection',
@@ -401,6 +402,14 @@ const messages = {
       allDone: 'Upload complete.',
       partialError: 'Some files could not be uploaded.',
       overallError: 'Upload failed. Please try again.',
+      statusDuplicate: 'Duplicate',
+      errorDuplicate: 'Duplicate — already on the platform',
+      errorFailedUpload: 'Upload error — please try again',
+      summarySuccess: '{n} file uploaded successfully | {n} files uploaded successfully',
+      summaryDuplicates: '{n} duplicate ignored | {n} duplicates ignored',
+      summaryErrors: '{n} error | {n} errors',
+      uploadMore: 'Upload more files',
+      removeFile: 'Remove',
     },
     detail: {
       back: '← Back',
@@ -619,7 +628,8 @@ const messages = {
     },
     collections: {
       title: 'Colecciones',
-      subtitle: 'Agrupa tus recursos en colecciones para la galería pública y la organización interna.',
+      subtitle:
+        'Agrupa tus recursos en colecciones para la galería pública y la organización interna.',
       new: 'Nueva colección',
       edit: 'Editar colección',
       delete: 'Eliminar colección',
@@ -1004,6 +1014,14 @@ const messages = {
       allDone: 'Subida completada.',
       partialError: 'Algunos archivos no se pudieron subir.',
       overallError: 'Error en la subida. Inténtalo de nuevo.',
+      statusDuplicate: 'Duplicado',
+      errorDuplicate: 'Duplicado — ya existe en la plataforma',
+      errorFailedUpload: 'Error al subir — inténtalo de nuevo',
+      summarySuccess: '{n} archivo subido correctamente | {n} archivos subidos correctamente',
+      summaryDuplicates: '{n} duplicado ignorado | {n} duplicados ignorados',
+      summaryErrors: '{n} error | {n} errores',
+      uploadMore: 'Subir más archivos',
+      removeFile: 'Eliminar',
     },
     detail: {
       back: '← Volver',
