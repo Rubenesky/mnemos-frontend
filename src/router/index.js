@@ -137,6 +137,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresRole: 'admin' },
     },
     {
+      path: '/reports/impact-dashboard',
+      name: 'impact-dashboard',
+      component: () => import('@/views/ImpactDashboardView.vue'),
+      meta: { requiresAuth: true, requiresRole: 'admin' },
+    },
+    {
       path: '/emergency-kit',
       name: 'emergency-kit',
       component: () => import('@/views/EmergencyKitView.vue'),

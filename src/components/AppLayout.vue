@@ -98,22 +98,35 @@
           <span>{{ t('nav.pressRoom') }}</span>
         </RouterLink>
 
-        <RouterLink
-          v-if="auth.isAdmin"
-          to="/reports"
-          class="nav-item"
-          :class="{ 'nav-item--active': $route.path.startsWith('/reports') }"
-          @click="menuOpen = false"
-        >
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
-          </svg>
-          <span>{{ t('nav.reports') }}</span>
-        </RouterLink>
+        <!-- Reports submenu — always visible, no accordion -->
+        <div v-if="auth.isAdmin" class="nav-group">
+          <div class="nav-group-label">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <span>{{ t('nav.reports') }}</span>
+          </div>
+          <RouterLink
+            to="/reports/impact-dashboard"
+            class="nav-item nav-item--sub"
+            :class="{ 'nav-item--active': $route.path === '/reports/impact-dashboard' }"
+            @click="menuOpen = false"
+          >
+            <span>{{ t('nav.reportsDashboard') }}</span>
+          </RouterLink>
+          <RouterLink
+            to="/reports"
+            class="nav-item nav-item--sub"
+            :class="{ 'nav-item--active': $route.path === '/reports' }"
+            @click="menuOpen = false"
+          >
+            <span>{{ t('nav.reportsPdf') }}</span>
+          </RouterLink>
+        </div>
 
         <RouterLink
           v-if="auth.isAdmin"
@@ -313,6 +326,27 @@ async function handleLogout() {
 
 .nav-item--active .nav-icon {
   color: #f59e0b;
+}
+
+/* ── Reports nav group / submenu ── */
+.nav-group { display: flex; flex-direction: column; gap: 1px; }
+
+.nav-group-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+.nav-item--sub {
+  padding-left: 30px;
+  font-size: 12px;
 }
 
 .nav-icon {
