@@ -188,6 +188,83 @@
         </div>
       </div>
 
+      <!-- AI Provenance (visible when AI content exists) -->
+      <div
+        v-if="provenance && provenance.ai_generated"
+        class="provenance-card"
+      >
+        <div class="provenance-header">
+          <h2 class="provenance-title">{{ t('detail.provenance.title') }}</h2>
+          <AIProvenanceBadge
+            :model="provenance.ai_model"
+            :generated-at="provenance.ai_generated_at"
+            :reviewed-at="provenance.ai_reviewed_at"
+            :reviewed-by="provenance.ai_reviewed_by?.name"
+          />
+        </div>
+
+        <dl class="provenance-meta">
+          <div v-if="provenance.ai_model" class="provenance-meta-row">
+            <dt>{{ t('detail.provenance.model') }}</dt>
+            <dd>{{ provenance.ai_model }}</dd>
+          </div>
+          <div v-if="provenance.ai_generated_at" class="provenance-meta-row">
+            <dt>{{ t('detail.provenance.generatedAt') }}</dt>
+            <dd>{{ formatDate(provenance.ai_generated_at) }}</dd>
+          </div>
+          <div class="provenance-meta-row">
+            <dt>{{ t('detail.provenance.reviewStatus') }}</dt>
+            <dd>
+              <span v-if="provenance.ai_reviewed_at" class="provenance-badge provenance-badge--reviewed">
+                {{ t('detail.provenance.reviewed') }}
+              </span>
+              <span v-else class="provenance-badge provenance-badge--pending">
+                {{ t('detail.provenance.pending') }}
+              </span>
+            </dd>
+          </div>
+          <div v-if="provenance.ai_reviewed_by" class="provenance-meta-row">
+            <dt>{{ t('detail.provenance.reviewedBy') }}</dt>
+            <dd>
+              {{ provenance.ai_reviewed_by.name }}
+              <span v-if="provenance.ai_reviewed_at" class="provenance-date">
+                {{ t('detail.provenance.reviewedAt', { date: formatDate(provenance.ai_reviewed_at) }) }}
+              </span>
+            </dd>
+          </div>
+        </dl>
+
+        <button
+          v-if="(auth.isAdmin || auth.isEditor) && !provenance.ai_reviewed_at"
+          class="provenance-btn-review"
+          :disabled="reviewLoading"
+          @click="markReviewed"
+        >
+          {{ reviewLoading ? t('detail.provenance.marking') : t('detail.provenance.markReviewed') }}
+        </button>
+
+        <div v-if="provenance.generations && provenance.generations.length" class="provenance-timeline">
+          <h3 class="provenance-timeline-title">{{ t('detail.provenance.generationsTitle') }}</h3>
+          <div
+            v-for="(gen, i) in provenance.generations"
+            :key="i"
+            class="provenance-gen-item"
+          >
+            <div class="provenance-gen-dot" />
+            <div class="provenance-gen-body">
+              <div class="provenance-gen-header">
+                <span class="provenance-gen-type">
+                  {{ t('detail.provenance.generationType.' + gen.type) }}
+                </span>
+                <span class="provenance-gen-model">{{ gen.model }}</span>
+                <span class="provenance-gen-date">{{ formatDate(gen.created_at) }}</span>
+              </div>
+              <p class="provenance-gen-preview">{{ gen.response_preview }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- GDPR Consent Status (admin/editor only) -->
       <div
         v-if="auth.isAdmin || auth.isEditor"
@@ -364,6 +441,7 @@ import { useI18n } from 'vue-i18n'
 import AppLayout from '../components/AppLayout.vue'
 import AssetTypeIcon from '../components/AssetTypeIcon.vue'
 import ConsentBadge from '../components/ConsentBadge.vue'
+import AIProvenanceBadge from '../components/AIProvenanceBadge.vue'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import api from '../api/axios'
@@ -384,10 +462,14 @@ const pressKitLoading = ref(false)
 const emergencyKitLoading = ref(false)
 
 // Collections
-const assetCollections       = ref([])
-const allCollections         = ref([])
-const selectedCollectionId   = ref('')
+const assetCollections        = ref([])
+const allCollections          = ref([])
+const selectedCollectionId    = ref('')
 const collectionActionLoading = ref(false)
+
+// AI Provenance
+const provenance    = ref(null)
+const reviewLoading = ref(false)
 
 const availableCollections = computed(() =>
   allCollections.value.filter(c => !assetCollections.value.some(ac => ac.id === c.id))
@@ -554,6 +636,28 @@ async function removeFromCollection(collectionId) {
   }
 }
 
+async function fetchProvenance(assetId) {
+  try {
+    const { data } = await api.get(`/assets/${assetId}/provenance`)
+    provenance.value = data.data
+  } catch {
+    // Non-critical — section stays hidden on error
+  }
+}
+
+async function markReviewed() {
+  reviewLoading.value = true
+  try {
+    const { data } = await api.post(`/assets/${route.params.id}/provenance/review`)
+    provenance.value = { ...provenance.value, ...data.data }
+    toast.success(t('detail.provenance.marked'))
+  } catch {
+    toast.error(t('detail.provenance.markError'))
+  } finally {
+    reviewLoading.value = false
+  }
+}
+
 async function fetchAssetConsents(assetId) {
   if (!auth.isAdmin && !auth.isEditor) return
   consentsLoading.value = true
@@ -575,6 +679,7 @@ onMounted(async () => {
     await Promise.all([
       fetchAssetConsents(route.params.id),
       fetchAllCollections(),
+      fetchProvenance(route.params.id),
     ])
   } catch (e) {
     // error handled by axios interceptor
@@ -594,5 +699,133 @@ onMounted(async () => {
   background-color: #fef3c7;
   color: #92400e;
   white-space: nowrap;
+}
+
+/* ── AI Provenance section ─────────────────────────────────────────────────── */
+.provenance-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+  padding: 1.25rem 1.5rem;
+}
+
+.provenance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.provenance-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.provenance-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.provenance-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  gap: 1rem;
+}
+
+.provenance-meta-row dt { color: #64748b; flex-shrink: 0; }
+.provenance-meta-row dd { color: #0f172a; font-weight: 500; text-align: right; }
+
+.provenance-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.provenance-badge--reviewed { background: #dcfce7; color: #166534; }
+.provenance-badge--pending  { background: #fef3c7; color: #92400e; }
+
+.provenance-date { color: #94a3b8; font-weight: 400; margin-left: 0.25rem; }
+
+.provenance-btn-review {
+  background: #f59e0b;
+  color: #0f172a;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+  margin-bottom: 1.25rem;
+}
+.provenance-btn-review:hover:not(:disabled) { background: #d97706; }
+.provenance-btn-review:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.provenance-timeline { border-top: 1px solid #f1f5f9; padding-top: 1rem; }
+
+.provenance-timeline-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.provenance-gen-item {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+.provenance-gen-item:last-child { margin-bottom: 0; }
+
+.provenance-gen-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  margin-top: 0.35rem;
+}
+
+.provenance-gen-body { flex: 1; min-width: 0; }
+
+.provenance-gen-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+
+.provenance-gen-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.provenance-gen-model { font-size: 0.7rem; color: #94a3b8; }
+.provenance-gen-date  { font-size: 0.7rem; color: #94a3b8; margin-left: auto; }
+
+.provenance-gen-preview {
+  font-size: 0.75rem;
+  color: #475569;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 </style>
