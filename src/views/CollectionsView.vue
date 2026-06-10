@@ -37,20 +37,28 @@
 
     <!-- Collections grid -->
     <div v-else class="collections-grid">
-      <article v-for="col in collections" :key="col.id" class="collection-card">
+      <article
+        v-for="col in collections"
+        :key="col.id"
+        class="collection-card"
+        role="button"
+        tabindex="0"
+        @click="router.push(`/collections/${col.id}`)"
+        @keydown.enter="router.push(`/collections/${col.id}`)"
+      >
         <!-- Public / private badge + action buttons -->
         <div class="card-top">
           <span class="badge" :class="col.is_public ? 'badge--public' : 'badge--private'">
             {{ col.is_public ? t('collections.public') : t('collections.private') }}
           </span>
           <div class="card-actions">
-            <button class="icon-btn" :title="t('collections.edit')" @click="openEditModal(col)">
+            <button class="icon-btn" :title="t('collections.edit')" @click.stop="openEditModal(col)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </button>
-            <button class="icon-btn icon-btn--danger" :title="t('collections.delete')" @click="confirmDelete(col)">
+            <button class="icon-btn icon-btn--danger" :title="t('collections.delete')" @click.stop="confirmDelete(col)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
@@ -72,13 +80,14 @@
             <button
               class="btn-visibility"
               :title="col.is_public ? t('collections.private') : t('collections.public')"
-              @click="toggleVisibility(col)"
+              @click.stop="toggleVisibility(col)"
             >
               {{ col.is_public ? '🌐' : '🔒' }}
             </button>
             <RouterLink
               :to="`/assets?collection_id=${col.id}`"
               class="btn-secondary btn-secondary--sm"
+              @click.stop
             >
               {{ t('collections.viewAssets') }}
             </RouterLink>
@@ -171,11 +180,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import api from '@/api/axios'
 import { useToastStore } from '@/stores/toast'
 
 const { t } = useI18n()
+const router = useRouter()
 const toast = useToastStore()
 
 // ── State ──────────────────────────────────────────────────────────────────

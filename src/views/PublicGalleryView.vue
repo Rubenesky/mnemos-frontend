@@ -18,9 +18,9 @@
       <h1 class="hero-title">{{ orgName }}</h1>
       <p class="hero-subtitle">{{ t('gallery.tagline') }}</p>
 
-      <!-- Collection pills — optional filter tabs, shown only when >1 collection exists -->
+      <!-- Collection pills — optional filter tabs, shown when >= 1 public collection has assets -->
       <div
-        v-if="!loadingCollections && collections.length > 1"
+        v-if="!loadingCollections && publicCollections.length >= 1"
         class="collection-pills"
         role="tablist"
         aria-label="Collections"
@@ -35,7 +35,7 @@
           {{ t('gallery.allCollections') }}
         </button>
         <button
-          v-for="col in collections"
+          v-for="col in publicCollections"
           :key="col.id"
           class="collection-pill"
           :class="{ 'collection-pill--active': selectedCollection?.id === col.id }"
@@ -182,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import MnemosLogo from '../components/MnemosLogo.vue'
@@ -214,15 +214,20 @@ const currentPage        = ref(1)
 const lastPage           = ref(1)
 const totalAssets        = ref(0)
 
+// Only show collections that have at least one public processed asset
+const publicCollections = computed(() =>
+  collections.value.filter(c => (c.assets_count ?? 0) > 0)
+)
+
 onMounted(() => {
   Promise.all([fetchAssets(), fetchCollections(), checkPressRoom()])
 })
 
-async function fetchAssets(page = 1, collectionSlug = null) {
+async function fetchAssets(page = 1, collectionId = null) {
   loadingAssets.value = true
   try {
     const params = { page }
-    if (collectionSlug) params.collection = collectionSlug
+    if (collectionId) params.collection_id = collectionId
 
     const { data } = await publicApi.get('/public/assets', { params })
     orgName.value     = data.org_name ?? 'Mnemos'
@@ -261,7 +266,7 @@ async function checkPressRoom() {
 
 async function selectCollection(col) {
   selectedCollection.value = col
-  await fetchAssets(1, col.slug)
+  await fetchAssets(1, col.id)
 }
 
 async function clearCollection() {
@@ -271,7 +276,7 @@ async function clearCollection() {
 
 async function goToPage(page) {
   if (page < 1 || page > lastPage.value) return
-  await fetchAssets(page, selectedCollection.value?.slug)
+  await fetchAssets(page, selectedCollection.value?.id ?? null)
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
