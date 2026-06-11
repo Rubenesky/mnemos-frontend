@@ -7,7 +7,7 @@
         <MnemosLogo />
       </div>
       <div class="header-actions">
-        <RouterLink v-if="pressRoomAvailable" to="/press-room" class="btn-pressroom">{{ t('gallery.pressRoom') }}</RouterLink>
+        <RouterLink to="/press-room" class="btn-pressroom">{{ t('nav.pressRoom') }}</RouterLink>
         <RouterLink to="/login" class="btn-primary">{{ t('auth.login') }}</RouterLink>
       </div>
     </header>
@@ -375,20 +375,20 @@ function formatDate(dateStr) {
 .btn-pressroom {
   display: inline-flex;
   align-items: center;
-  background: transparent;
+  background: #0f172a;
   color: #f59e0b;
   font-size: 13px;
   font-weight: 500;
   padding: 6px 14px;
   border-radius: 6px;
-  border: 1px solid #f59e0b;
+  border: none;
   text-decoration: none;
-  transition: background 0.12s ease;
+  transition: opacity 0.12s ease;
   white-space: nowrap;
 }
 
 .btn-pressroom:hover {
-  background: rgba(245, 158, 11, 0.1);
+  opacity: 0.88;
 }
 
 
