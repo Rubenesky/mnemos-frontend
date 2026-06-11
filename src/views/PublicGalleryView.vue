@@ -6,6 +6,7 @@
       <div class="header-logo">
         <MnemosLogo />
       </div>
+      <span class="header-gallery-title">{{ t('nav.publicGallery') }}</span>
       <div class="header-actions">
         <RouterLink v-if="pressRoomAvailable" to="/press-room" class="btn-pressroom">{{ t('gallery.pressRoom') }}</RouterLink>
         <RouterLink to="/register" class="btn-register">{{ t('auth.register') }}</RouterLink>
@@ -362,6 +363,16 @@ function formatDate(dateStr) {
   width: auto;
   border-radius: 16px;
   display: block;
+}
+
+.header-gallery-title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #D4A843;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .header-actions {
