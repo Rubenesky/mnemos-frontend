@@ -368,9 +368,12 @@ function formatDate(dateStr) {
 .header-gallery-title {
   flex: 1;
   text-align: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: #D4A843;
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-gold);
+  text-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
   white-space: nowrap;
   pointer-events: none;
 }
