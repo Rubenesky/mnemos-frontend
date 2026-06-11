@@ -6,7 +6,6 @@
       <div class="header-logo">
         <MnemosLogo />
       </div>
-      <span class="header-gallery-title">{{ t('nav.publicGallery') }}</span>
       <div class="header-actions">
         <RouterLink v-if="pressRoomAvailable" to="/press-room" class="btn-pressroom">{{ t('gallery.pressRoom') }}</RouterLink>
         <RouterLink to="/register" class="btn-register">{{ t('auth.register') }}</RouterLink>
@@ -17,6 +16,7 @@
     <!-- Hero -->
     <section class="hero">
       <h1 class="hero-title">{{ orgName }}</h1>
+      <h2 class="hero-label">{{ t('nav.publicGallery') }}</h2>
       <p class="hero-subtitle">{{ t('gallery.tagline') }}</p>
 
       <!-- Collection pills — optional filter tabs, shown when >= 1 public collection has assets -->
@@ -365,18 +365,6 @@ function formatDate(dateStr) {
   display: block;
 }
 
-.header-gallery-title {
-  flex: 1;
-  text-align: center;
-  font-family: var(--font-sans);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-gold);
-  -webkit-text-stroke: 0.5px var(--color-navy);
-  white-space: nowrap;
-  pointer-events: none;
-}
 
 .header-actions {
   display: flex;
@@ -449,16 +437,23 @@ function formatDate(dateStr) {
 }
 
 .hero-title {
-  font-size: 22px;
-  font-weight: 500;
-  color: #0f172a;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-gold);
   letter-spacing: -0.02em;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.2;
+}
+
+.hero-label {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #4a5568;
+  margin: 6px 0 0;
 }
 
 .hero-subtitle {
-  font-size: 13px;
+  font-size: 0.9rem;
   color: #94a3b8;
   margin: 4px 0 0;
 }
