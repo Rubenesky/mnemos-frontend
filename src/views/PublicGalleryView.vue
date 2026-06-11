@@ -8,7 +8,6 @@
       </div>
       <div class="header-actions">
         <RouterLink v-if="pressRoomAvailable" to="/press-room" class="btn-pressroom">{{ t('gallery.pressRoom') }}</RouterLink>
-        <RouterLink to="/register" class="btn-register">{{ t('auth.register') }}</RouterLink>
         <RouterLink to="/login" class="btn-primary">{{ t('auth.login') }}</RouterLink>
       </div>
     </header>
@@ -392,24 +391,6 @@ function formatDate(dateStr) {
   background: rgba(245, 158, 11, 0.1);
 }
 
-.btn-register {
-  display: inline-flex;
-  align-items: center;
-  background: #0f172a;
-  color: #f59e0b;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  text-decoration: none;
-  transition: opacity 0.12s ease;
-  white-space: nowrap;
-}
-
-.btn-register:hover {
-  opacity: 0.88;
-}
 
 /* ── Login button ── */
 .btn-primary {

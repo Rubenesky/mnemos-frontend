@@ -45,10 +45,7 @@
           {{ loading ? t('auth.signingIn') : t('auth.login') }}
         </button>
       </form>
-      <p class="form-footer">
-        {{ t('auth.noAccount') }}
-        <RouterLink to="/register" class="form-link">{{ t('auth.register') }}</RouterLink>
-      </p>
+
     </div>
     <RouterLink to="/gallery" class="gallery-link">{{ t('auth.viewGallery') }}</RouterLink>
   </div>
