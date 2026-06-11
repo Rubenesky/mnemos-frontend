@@ -373,7 +373,7 @@ function formatDate(dateStr) {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-gold);
-  text-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
+  -webkit-text-stroke: 1px var(--color-navy);
   white-space: nowrap;
   pointer-events: none;
 }
