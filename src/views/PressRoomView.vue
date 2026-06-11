@@ -54,8 +54,6 @@
       <p v-if="!auth.isAuthenticated" class="footer-auth">
         {{ t('pressRoom.loginPrompt') }}
         <RouterLink to="/login" class="footer-link">{{ t('pressRoom.loginLink') }}</RouterLink>
-        ·
-        <RouterLink to="/register" class="footer-link">{{ t('pressRoom.registerLink') }}</RouterLink>
       </p>
     </footer>
   </div>
