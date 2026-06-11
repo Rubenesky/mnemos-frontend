@@ -57,7 +57,7 @@ function handleGetStarted() {
 /* ── Page ── */
 .onboarding-page {
   min-height: 100vh;
-  background: var(--color-navy, #0f172a);
+  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -73,6 +73,10 @@ function handleGetStarted() {
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
 }
 
 /* ── Logo — scaled up for hero ── */
@@ -132,7 +136,7 @@ function handleGetStarted() {
 }
 
 .feature-title {
-  color: #ffffff;
+  color: #0f172a;
   font-size: 0.9375rem;
   font-weight: 700;
   margin: 0;
