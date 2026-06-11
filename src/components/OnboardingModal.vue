@@ -195,7 +195,18 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 
 /* ── Step 1 logo ── */
 .ob-logo-wrap {
-  margin-bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-navy);
+  border-radius: 14px;
+  padding: 12px 20px;
+  margin: 0 auto 24px;
+}
+
+.ob-logo-wrap :deep(.logo-img) {
+  height: 88px;
+  border-radius: 10px;
 }
 
 /* ── Step 3 checkmark ── */
