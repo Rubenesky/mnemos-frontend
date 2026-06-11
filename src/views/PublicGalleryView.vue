@@ -369,11 +369,11 @@ function formatDate(dateStr) {
   flex: 1;
   text-align: center;
   font-family: var(--font-sans);
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-gold);
-  -webkit-text-stroke: 1px var(--color-navy);
+  -webkit-text-stroke: 0.5px var(--color-navy);
   white-space: nowrap;
   pointer-events: none;
 }
