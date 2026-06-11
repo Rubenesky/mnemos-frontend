@@ -199,7 +199,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
   align-items: center;
   justify-content: center;
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 16px;
   padding: 12px;
   box-shadow: 0 8px 32px rgba(245, 158, 11, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
   margin: 0 auto 24px;
