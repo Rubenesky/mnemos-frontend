@@ -54,7 +54,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const open          = ref(false)
 const notifications = ref([])
@@ -103,7 +106,7 @@ function typeIcon(type) {
 
 function formatMessage(n) {
   if (n.type === 'consent_responded') {
-    return `Consentimiento ${n.data.person_name}: ${n.data.status}`
+    return `Consentimiento ${n.data.person_name}: ${t('consent.status.' + n.data.status)}`
   }
   if (n.type === 'volunteer_upload') {
     return `${n.data.uploader_name} ha subido ${n.data.asset_name}`
