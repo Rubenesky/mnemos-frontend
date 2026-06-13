@@ -96,12 +96,19 @@ onMounted(async () => {
   padding: 24px;
 }
 
+@media (max-width: 640px) {
+  .pressroom-header {
+    padding: 16px;
+  }
+}
+
 .header-inner {
   max-width: 1100px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .header-logo {
@@ -116,7 +123,15 @@ onMounted(async () => {
   margin-left: auto;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
   flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .header-nav {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
 .nav-btn {

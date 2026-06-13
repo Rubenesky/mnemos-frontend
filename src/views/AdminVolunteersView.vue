@@ -197,20 +197,11 @@ onMounted(fetchVolunteers)
   border-radius: 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  position: relative;
 }
 
 @media (max-width: 640px) {
-  .table-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 32px;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9));
-    pointer-events: none;
-    border-radius: 0 10px 10px 0;
+  .table-card {
+    box-shadow: inset -10px 0 10px -8px rgba(0, 0, 0, 0.08);
   }
 }
 

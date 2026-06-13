@@ -694,6 +694,12 @@ function isImage(asset) {
   overflow: hidden;
 }
 
+@media (max-width: 640px) {
+  .table-card {
+    box-shadow: inset -10px 0 10px -8px rgba(0, 0, 0, 0.08);
+  }
+}
+
 .state-message {
   padding: 48px 24px;
   text-align: center;
@@ -703,6 +709,7 @@ function isImage(asset) {
 
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Table ── */

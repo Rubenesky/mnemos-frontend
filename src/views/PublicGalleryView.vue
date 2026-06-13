@@ -351,6 +351,14 @@ function formatDate(dateStr) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .gallery-header {
+    padding: 10px 16px;
+  }
 }
 
 .header-logo {
@@ -364,11 +372,17 @@ function formatDate(dateStr) {
   display: block;
 }
 
+@media (max-width: 640px) {
+  .header-logo :deep(.logo-img) {
+    height: 56px;
+  }
+}
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   flex: 0 0 auto;
 }
 
