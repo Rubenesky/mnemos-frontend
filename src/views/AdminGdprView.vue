@@ -70,7 +70,7 @@
           <div v-else class="alert-list">
             <div v-for="(alert, i) in data.alerts" :key="i" class="alert-item">
               <span class="alert-icon">⚠</span>
-              <span class="alert-text">{{ alert }}</span>
+              <span class="alert-text">{{ t('admin.gdpr.alerts.' + alert.key, alert.count !== undefined ? { count: alert.count } : {}) }}</span>
             </div>
           </div>
         </div>

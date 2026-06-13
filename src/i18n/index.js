@@ -332,6 +332,10 @@ const messages = {
         alerts: {
           title: 'Actionable alerts',
           none: '✓ Everything is in order',
+          assetsBlocked: '{count} asset(s) cannot be published due to pending or denied consents.',
+          pendingHigh: 'More than 50 consents are pending a response.',
+          pendingMedium: '{count} consents are pending a response.',
+          rejectionRateExceeded: 'Rejection rate exceeds 10% of total consents.',
         },
       },
       users: {
@@ -1019,6 +1023,10 @@ const messages = {
         alerts: {
           title: 'Alertas accionables',
           none: '✓ Todo en orden',
+          assetsBlocked: '{count} recurso(s) no pueden publicarse por consentimientos pendientes o denegados.',
+          pendingHigh: 'Más de 50 consentimientos están pendientes de respuesta.',
+          pendingMedium: '{count} consentimientos están pendientes de respuesta.',
+          rejectionRateExceeded: 'La tasa de rechazo supera el 10% del total de consentimientos.',
         },
       },
       users: {
