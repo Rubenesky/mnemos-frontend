@@ -6,16 +6,16 @@
 
     <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="flex justify-between items-center">
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
           {{ asset.metadata?.title ?? asset.original_name }}
         </h1>
-        <div class="flex gap-3 items-center">
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2 sm:items-center">
           <button
             v-if="!auth.isVolunteer"
             @click="togglePublic"
             :disabled="publishLoading"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
             :class="asset.is_public
               ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'"
@@ -26,7 +26,7 @@
             v-if="auth.isAdmin || auth.isEditor"
             @click="togglePressKit"
             :disabled="pressKitLoading"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
             :class="asset.is_press_kit
               ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'"
@@ -37,7 +37,7 @@
             v-if="auth.isAdmin || auth.isEditor"
             @click="toggleEmergencyKit"
             :disabled="emergencyKitLoading"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
             :class="asset.is_emergency_kit
               ? 'bg-red-100 text-red-800 hover:bg-red-200'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'"
@@ -47,24 +47,24 @@
           <RouterLink
             v-if="auth.isAdmin || auth.isEditor"
             :to="`/assets/${asset.id}/audit`"
-            class="bg-amber-50 text-amber-800 border border-amber-200 px-4 py-2 rounded-lg hover:bg-amber-100 text-sm font-medium transition"
+            class="w-full sm:w-auto text-center bg-amber-50 text-amber-800 border border-amber-200 px-4 py-2 rounded-lg hover:bg-amber-100 text-sm font-medium transition"
           >
             🕓 {{ t('detail.viewHistory') }}
           </RouterLink>
           <RouterLink
             :to="`/assets/${asset.id}/edit`"
-            class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
+            class="w-full sm:w-auto text-center bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
           >
             {{ t('common.edit') }}
           </RouterLink>
           <button
             v-if="auth.isAdmin"
             @click="handleDelete"
-            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm"
           >
             {{ t('common.delete') }}
           </button>
-          <RouterLink to="/assets" class="text-gray-500 dark:text-gray-400 hover:underline text-sm">
+          <RouterLink to="/assets" class="w-full sm:w-auto text-center text-gray-500 dark:text-gray-400 hover:underline text-sm py-2">
             {{ t('detail.back') }}
           </RouterLink>
         </div>
