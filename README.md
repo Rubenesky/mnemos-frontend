@@ -2,7 +2,6 @@
 
 > *Open memory for organizations that matter*
 
-[![Backend Tests](https://img.shields.io/badge/backend%20tests-90%20passed-brightgreen.svg)](https://github.com/rubenesky/mnemos-backend)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Vue 3](https://img.shields.io/badge/Vue-3-42b883.svg?logo=vue.js)](https://vuejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-8-646cff.svg?logo=vite)](https://vitejs.dev/)
